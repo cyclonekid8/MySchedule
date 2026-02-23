@@ -19,6 +19,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Android build tools
+        run: |
+          echo "y" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3"
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
