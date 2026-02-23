@@ -4,12 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/activity.dart';
 import '../models/note.dart';
+import '../services/notification_service.dart';
 
 class ScheduleProvider extends ChangeNotifier {
   List<Activity> _activities = [];
   List<Note> _notes = [];
   DateTime _selectedDay = DateTime.now();
   final _uuid = const Uuid();
+  final _notifService = NotificationService();
 
   List<Activity> get activities => _activities;
   List<Note> get notes => _notes;
@@ -37,17 +39,20 @@ class ScheduleProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addActivity(Activity activity) {
+  Future<void> addActivity(Activity activity) async {
     _activities.add(activity);
-    _save();
+    await _notifService.scheduleActivityReminder(activity);
+    await _save();
     notifyListeners();
   }
 
-  void updateActivity(Activity activity) {
+  Future<void> updateActivity(Activity activity) async {
     final idx = _activities.indexWhere((a) => a.id == activity.id);
     if (idx != -1) {
       _activities[idx] = activity;
-      _save();
+      await _notifService.cancelActivityReminder(activity.id);
+      await _notifService.scheduleActivityReminder(activity);
+      await _save();
       notifyListeners();
     }
   }
@@ -63,15 +68,15 @@ class ScheduleProvider extends ChangeNotifier {
     }
   }
 
-  void deleteActivity(String id) {
+  Future<void> deleteActivity(String id) async {
+    await _notifService.cancelActivityReminder(id);
     _activities.removeWhere((a) => a.id == id);
-    _save();
+    await _save();
     notifyListeners();
   }
 
   String generateId() => _uuid.v4();
 
-  // Notes
   void addNote(Note note) {
     _notes.insert(0, note);
     _save();
@@ -110,7 +115,9 @@ class ScheduleProvider extends ChangeNotifier {
 
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('activities', jsonEncode(_activities.map((a) => a.toJson()).toList()));
-    prefs.setString('notes', jsonEncode(_notes.map((n) => n.toJson()).toList()));
+    prefs.setString('activities',
+        jsonEncode(_activities.map((a) => a.toJson()).toList()));
+    prefs.setString(
+        'notes', jsonEncode(_notes.map((n) => n.toJson()).toList()));
   }
 }

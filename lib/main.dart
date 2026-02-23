@@ -3,15 +3,22 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/schedule_provider.dart';
 import 'screens/home_screen.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
+
+  // Initialize notifications
+  await NotificationService().init();
+
   final provider = ScheduleProvider();
   await provider.load();
+
   runApp(
     ChangeNotifierProvider.value(
       value: provider,
@@ -31,10 +38,9 @@ class MyScheduleApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0F0F13),
-        colorScheme: ColorScheme.dark(
-          primary: const Color(0xFF6C63FF),
-          surface: const Color(0xFF18181F),
-          background: const Color(0xFF0F0F13),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF6C63FF),
+          surface: Color(0xFF18181F),
         ),
         fontFamily: 'Roboto',
         useMaterial3: true,
