@@ -19,7 +19,7 @@ android {
     kotlinOptions { jvmTarget = '1.8' }
     sourceSets { main.java.srcDirs += 'src/main/kotlin' }
     defaultConfig {
-        applicationId "com.example.myschedule"
+        applicationId "com.cyclonekid.myschedule"
         minSdk 21
         targetSdk 34
         versionCode flutterVersionCode.toInteger()
