@@ -26,11 +26,24 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build AAB
-        run: flutter build appbundle --release --no-tree-shake-icons
+      - name: Decode keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/myschedule.jks
+
+      - name: Build release AAB
+        env:
+          STORE_FILE: myschedule.jks
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          flutter build appbundle --release --no-tree-shake-icons \
+            -Pandroid.injected.signing.store.file=$PWD/android/app/myschedule.jks \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: MySchedule-AAB-Unsigned
+          name: MySchedule-AAB
           path: build/app/outputs/bundle/release/app-release.aab
