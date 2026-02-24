@@ -2,6 +2,15 @@ name: Build MySchedule AAB Unsigned (Play Store)
 
 on:
   workflow_dispatch:
+    inputs:
+      version_code:
+        description: 'Version code (increment each release e.g. 2, 3, 4)'
+        required: true
+        default: '2'
+      version_name:
+        description: 'Version name (e.g. 1.0.1)'
+        required: true
+        default: '1.0.1'
 
 jobs:
   build:
@@ -30,13 +39,10 @@ jobs:
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/myschedule.jks
 
       - name: Build release AAB
-        env:
-          STORE_FILE: myschedule.jks
-          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           flutter build appbundle --release --no-tree-shake-icons \
+            --build-number=${{ github.event.inputs.version_code }} \
+            --build-name=${{ github.event.inputs.version_name }} \
             -Pandroid.injected.signing.store.file=$PWD/android/app/myschedule.jks \
             -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
             -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
@@ -45,5 +51,5 @@ jobs:
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: MySchedule-AAB
+          name: MySchedule-AAB-v${{ github.event.inputs.version_name }}
           path: build/app/outputs/bundle/release/app-release.aab
