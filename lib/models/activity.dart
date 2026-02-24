@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 
+// Free categories
+const List<Category> freeCategories = [
+  Category.work,
+  Category.personal,
+  Category.healthFitness,
+];
+
 enum Category {
   work, personal, healthFitness, social, errands,
-  prayer, tankMaintenance, crSupport, laundry,
+  prayer, tankMaintenance, crSupport, laundry, custom,
 }
 
 extension CategoryExtension on Category {
@@ -17,6 +24,7 @@ extension CategoryExtension on Category {
       case Category.tankMaintenance: return 'Tank Maintenance';
       case Category.crSupport: return 'CR Support';
       case Category.laundry: return 'Laundry';
+      case Category.custom: return 'Custom';
     }
   }
 
@@ -31,6 +39,7 @@ extension CategoryExtension on Category {
       case Category.tankMaintenance: return const Color(0xFF00CEC9);
       case Category.crSupport: return const Color(0xFFA29BFE);
       case Category.laundry: return const Color(0xFFFD79A8);
+      case Category.custom: return const Color(0xFF6C63FF);
     }
   }
 
@@ -45,8 +54,11 @@ extension CategoryExtension on Category {
       case Category.tankMaintenance: return '🐠';
       case Category.crSupport: return '🤝';
       case Category.laundry: return '👕';
+      case Category.custom: return '⭐';
     }
   }
+
+  bool get isFree => freeCategories.contains(this);
 }
 
 enum RepeatType { none, daily, weekly, monthly }
@@ -68,6 +80,8 @@ class Activity {
   DateTime startTime;
   DateTime endTime;
   Category category;
+  String customCategoryName;
+  Color customCategoryColor;
   RepeatType repeat;
   bool hasCompletionTracking;
   bool isDone;
@@ -80,6 +94,8 @@ class Activity {
     required this.startTime,
     required this.endTime,
     required this.category,
+    this.customCategoryName = '',
+    this.customCategoryColor = const Color(0xFF6C63FF),
     this.repeat = RepeatType.none,
     this.hasCompletionTracking = false,
     this.isDone = false,
@@ -87,9 +103,16 @@ class Activity {
     this.reminderMinutesBefore = 15,
   });
 
+  String get displayCategory =>
+      category == Category.custom ? customCategoryName : category.label;
+
+  Color get displayColor =>
+      category == Category.custom ? customCategoryColor : category.color;
+
   Activity copyWith({
     String? title, DateTime? startTime, DateTime? endTime,
-    Category? category, RepeatType? repeat,
+    Category? category, String? customCategoryName,
+    Color? customCategoryColor, RepeatType? repeat,
     bool? hasCompletionTracking, bool? isDone,
     bool? hasReminder, int? reminderMinutesBefore,
   }) {
@@ -98,6 +121,8 @@ class Activity {
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       category: category ?? this.category,
+      customCategoryName: customCategoryName ?? this.customCategoryName,
+      customCategoryColor: customCategoryColor ?? this.customCategoryColor,
       repeat: repeat ?? this.repeat,
       hasCompletionTracking: hasCompletionTracking ?? this.hasCompletionTracking,
       isDone: isDone ?? this.isDone,
@@ -110,7 +135,10 @@ class Activity {
     'id': id, 'title': title,
     'startTime': startTime.toIso8601String(),
     'endTime': endTime.toIso8601String(),
-    'category': category.index, 'repeat': repeat.index,
+    'category': category.index,
+    'customCategoryName': customCategoryName,
+    'customCategoryColor': customCategoryColor.value,
+    'repeat': repeat.index,
     'hasCompletionTracking': hasCompletionTracking,
     'isDone': isDone, 'hasReminder': hasReminder,
     'reminderMinutesBefore': reminderMinutesBefore,
@@ -121,6 +149,8 @@ class Activity {
     startTime: DateTime.parse(json['startTime']),
     endTime: DateTime.parse(json['endTime']),
     category: Category.values[json['category']],
+    customCategoryName: json['customCategoryName'] ?? '',
+    customCategoryColor: Color(json['customCategoryColor'] ?? 0xFF6C63FF),
     repeat: RepeatType.values[json['repeat']],
     hasCompletionTracking: json['hasCompletionTracking'] ?? false,
     isDone: json['isDone'] ?? false,
