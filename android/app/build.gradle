@@ -13,7 +13,7 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '
 
 android {
     namespace "com.example.myschedule"
-    compileSdk 34
+    compileSdk 35
     ndkVersion flutter.ndkVersion
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
     kotlinOptions { jvmTarget = '1.8' }
@@ -21,7 +21,7 @@ android {
     defaultConfig {
         applicationId "com.cyclonekid.myschedule"
         minSdk 21
-        targetSdk 34
+        targetSdk 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
