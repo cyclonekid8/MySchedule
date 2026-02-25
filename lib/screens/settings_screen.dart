@@ -354,23 +354,28 @@ class _OptionTile extends StatelessWidget {
   const _OptionTile({required this.label, required this.selected, required this.onTap});
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: selected ? const Color(0xFF6C63FF).withOpacity(0.15) : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: selected ? const Color(0xFF6C63FF) : const Color(0xFF3A3A4A)),
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
+    final borderColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF6C63FF).withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: selected ? const Color(0xFF6C63FF) : borderColor),
+        ),
+        child: Row(children: [
+          Text(label, style: TextStyle(
+            color: selected ? const Color(0xFF6C63FF) : textColor,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal)),
+          const Spacer(),
+          if (selected) const Icon(Icons.check, color: Color(0xFF6C63FF), size: 18),
+        ]),
       ),
-      child: Row(children: [
-        Text(label, style: TextStyle(
-          color: selected ? const Color(0xFF6C63FF) : Colors.white,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal)),
-        const Spacer(),
-        if (selected) const Icon(Icons.check, color: Color(0xFF6C63FF), size: 18),
-      ]),
-    ),
-  );
+    );
+  }
 }

@@ -173,13 +173,13 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
           const SizedBox(height: 8),
           TextField(
             controller: _titleController,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: textColor),
             decoration: InputDecoration(
               hintText: 'e.g. Morning Prayer…',
-              hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
+              hintStyle: TextStyle(color: subColor),
               filled: true, fillColor: surface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF3A3A4A))),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF3A3A4A))),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF6C63FF))),
             ),
           ),
@@ -196,7 +196,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
               child: Row(children: [
                 const Icon(Icons.calendar_today, color: Color(0xFF6C63FF), size: 18),
                 const SizedBox(width: 10),
-                Text(DateFormat('EEE, MMM dd yyyy').format(_startTime), style: const TextStyle(color: Colors.white)),
+                Text(DateFormat('EEE, MMM dd yyyy').format(_startTime), style: TextStyle(color: textColor)),
               ]),
             ),
           ),
