@@ -301,7 +301,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
               child: const Center(child: Text('Save Activity', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700))),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
         ],
       ),
     );
