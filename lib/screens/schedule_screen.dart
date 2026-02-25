@@ -122,7 +122,7 @@ class _TimeGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activities = context.watch<ScheduleProvider>().activitiesForSelectedDay;
-    final hours = List.generate(18, (i) => i + 5); // 5am to 10pm
+    final hours = List.generate(24, (i) => i); // 12am to 11pm
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
