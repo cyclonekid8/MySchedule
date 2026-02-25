@@ -81,9 +81,9 @@ class CalendarScreen extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: a.category.color.withOpacity(isDark ? 0.1 : 0.07),
+                      color: a.displayColor.withOpacity(isDark ? 0.1 : 0.07),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border(left: BorderSide(color: a.category.color, width: 3)),
+                      border: Border(left: BorderSide(color: a.displayColor, width: 3)),
                     ),
                     child: Row(children: [
                       Text(a.category.emoji),
@@ -95,8 +95,8 @@ class CalendarScreen extends StatelessWidget {
                       ])),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(color: a.category.color.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
-                        child: Text(a.category.label, style: TextStyle(fontSize: 10, color: a.category.color, fontWeight: FontWeight.w600)),
+                        decoration: BoxDecoration(color: a.displayColor.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                        child: Text(a.displayCategory, style: TextStyle(fontSize: 10, color: a.displayColor, fontWeight: FontWeight.w600)),
                       ),
                     ]),
                   ),
