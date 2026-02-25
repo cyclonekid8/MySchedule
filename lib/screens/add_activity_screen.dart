@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/activity.dart';
 import '../providers/schedule_provider.dart';
+import '../services/purchase_service.dart';
+import 'paywall_screen.dart';
 
 class AddActivityScreen extends StatefulWidget {
   final Activity? existing;
@@ -99,6 +101,22 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
       return;
     }
     final provider = context.read<ScheduleProvider>();
+    final purchase = context.read<PurchaseService>();
+
+    // Free limit: 2 activities per day
+    if (widget.existing == null && !purchase.isPremium) {
+      final activitiesToday = provider.activities.where((a) =>
+        a.startTime.year == _startTime.year &&
+        a.startTime.month == _startTime.month &&
+        a.startTime.day == _startTime.day).length;
+      if (activitiesToday >= 2) {
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => const PaywallScreen(
+            reason: 'Free users can only add 2 activities per day. Upgrade to Premium for unlimited activities!')));
+        return;
+      }
+    }
+
     if (widget.existing != null) {
       provider.updateActivity(widget.existing!.copyWith(
         title: _titleController.text.trim(),
