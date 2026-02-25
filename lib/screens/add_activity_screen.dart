@@ -142,17 +142,24 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? const Color(0xFF0A0A0F) : Colors.white;
+    final surface = isDark ? const Color(0xFF16161E) : const Color(0xFFF0F0F5);
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
+    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
+    final borderColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F13),
+      backgroundColor: bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F0F13),
+        backgroundColor: bg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(widget.existing != null ? 'Edit Activity' : 'Add Activity',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w700)),
         actions: [
           TextButton(onPressed: _save,
             child: const Text('Save', style: TextStyle(color: Color(0xFF6C63FF), fontWeight: FontWeight.w700))),
@@ -170,7 +177,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
             decoration: InputDecoration(
               hintText: 'e.g. Morning Prayer…',
               hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
-              filled: true, fillColor: const Color(0xFF18181F),
+              filled: true, fillColor: surface,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF3A3A4A))),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF3A3A4A))),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF6C63FF))),
@@ -185,7 +192,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
             onTap: _pickDate,
             child: Container(
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: const Color(0xFF18181F), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF3A3A4A))),
+              decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
               child: Row(children: [
                 const Icon(Icons.calendar_today, color: Color(0xFF6C63FF), size: 18),
                 const SizedBox(width: 10),
@@ -249,7 +256,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
                 margin: const EdgeInsets.symmetric(horizontal: 3),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: sel ? const Color(0xFF6C63FF).withOpacity(0.2) : const Color(0xFF18181F),
+                  color: sel ? const Color(0xFF6C63FF).withOpacity(0.2) : surface,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: sel ? const Color(0xFF6C63FF) : const Color(0xFF3A3A4A)),
                 ),
@@ -293,7 +300,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
                     duration: const Duration(milliseconds: 150),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: sel ? const Color(0xFF6C63FF) : const Color(0xFF18181F),
+                      color: sel ? const Color(0xFF6C63FF) : surface,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: sel ? const Color(0xFF6C63FF) : const Color(0xFF3A3A4A)),
                     ),
@@ -339,15 +346,22 @@ class _TimeBox extends StatelessWidget {
   final String label;
   const _TimeBox(this.time, this.label);
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(color: const Color(0xFF18181F), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF3A3A4A))),
-    child: Column(children: [
-      Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFFAAAAAA))),
-      const SizedBox(height: 4),
-      Text(time, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white, fontFamily: 'monospace')),
-    ]),
-  );
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? const Color(0xFF16161E) : const Color(0xFFF0F0F5);
+    final borderColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
+    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+      child: Column(children: [
+        Text(label, style: TextStyle(fontSize: 10, color: subColor)),
+        const SizedBox(height: 4),
+        Text(time, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor, fontFamily: 'monospace')),
+      ]),
+    );
+  }
 }
 
 class _ToggleRow extends StatelessWidget {
@@ -359,17 +373,24 @@ class _ToggleRow extends StatelessWidget {
   const _ToggleRow({required this.icon, required this.label, required this.subtitle, required this.value, required this.onChanged});
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(color: const Color(0xFF18181F), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF3A3A4A))),
-    child: Row(children: [
-      Icon(icon, color: const Color(0xFF6C63FF), size: 20),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-        Text(subtitle, style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 11)),
-      ])),
-      Switch(value: value, onChanged: onChanged, activeColor: const Color(0xFF6C63FF)),
-    ]),
-  );
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? const Color(0xFF16161E) : const Color(0xFFF0F0F5);
+    final borderColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
+    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: borderColor)),
+      child: Row(children: [
+        Icon(icon, color: const Color(0xFF6C63FF), size: 20),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label, style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w500)),
+          Text(subtitle, style: TextStyle(color: subColor, fontSize: 11)),
+        ])),
+        Switch(value: value, onChanged: onChanged, activeColor: const Color(0xFF6C63FF)),
+      ]),
+    );
+  }
 }
