@@ -37,7 +37,7 @@ class _NotesScreenState extends State<NotesScreen> {
       builder: (ctx) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
-        final subColor = isDark ? const Color(0xFF8888AA) : const Color(0xFF666688);
+        final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
         final fieldBg = isDark ? const Color(0xFF0F0F13) : const Color(0xFFF0F0F5);
 
         return Padding(
@@ -128,9 +128,9 @@ class _NotesScreenState extends State<NotesScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? const Color(0xFF0F0F13) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
-    final subColor = isDark ? const Color(0xFF8888AA) : const Color(0xFF666688);
+    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
     final surface = isDark ? const Color(0xFF18181F) : const Color(0xFFF5F5F5);
-    final border = isDark ? const Color(0xFF2E2E3D) : const Color(0xFFE0E0E0);
+    final border = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
 
     final filtered = provider.notes.where((n) =>
       _search.isEmpty ||

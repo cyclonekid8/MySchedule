@@ -44,24 +44,24 @@ class CalendarScreen extends StatelessWidget {
             rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
           ),
           daysOfWeekStyle: const DaysOfWeekStyle(
-            weekdayStyle: TextStyle(color: Color(0xFF8888AA), fontWeight: FontWeight.w600),
+            weekdayStyle: TextStyle(color: Color(0xFFAAAAAA), fontWeight: FontWeight.w600),
             weekendStyle: TextStyle(color: Color(0xFFFF6B6B), fontWeight: FontWeight.w600),
           ),
           eventLoader: (day) => provider.activities.where((a) =>
             a.startTime.year == day.year && a.startTime.month == day.month && a.startTime.day == day.day).toList(),
         ),
-        const Divider(color: Color(0xFF2E2E3D)),
+        const Divider(color: Color(0xFF3A3A4A)),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text(DateFormat('EEE, MMM dd').format(selected),
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
             Text('${provider.activitiesForSelectedDay.length} activities',
-              style: const TextStyle(color: Color(0xFF8888AA), fontSize: 12)),
+              style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 12)),
           ]),
         ),
         Expanded(child: provider.activitiesForSelectedDay.isEmpty
-          ? const Center(child: Text('No activities this day', style: TextStyle(color: Color(0xFF8888AA))))
+          ? const Center(child: Text('No activities this day', style: TextStyle(color: Color(0xFFAAAAAA))))
           : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: provider.activitiesForSelectedDay.length,
@@ -83,7 +83,7 @@ class CalendarScreen extends StatelessWidget {
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(a.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                         Text('${DateFormat('HH:mm').format(a.startTime)} – ${DateFormat('HH:mm').format(a.endTime)}',
-                          style: const TextStyle(color: Color(0xFF8888AA), fontSize: 11, fontFamily: 'monospace')),
+                          style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 11, fontFamily: 'monospace')),
                       ])),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

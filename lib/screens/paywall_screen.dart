@@ -13,7 +13,7 @@ class PaywallScreen extends StatelessWidget {
     final bg = isDark ? const Color(0xFF0F0F13) : Colors.white;
     final surface = isDark ? const Color(0xFF18181F) : const Color(0xFFF5F5F5);
     final text = isDark ? Colors.white : const Color(0xFF1A1A2E);
-    final subtext = isDark ? const Color(0xFF8888AA) : const Color(0xFF666688);
+    final subtext = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
 
     return Scaffold(
       backgroundColor: bg,
@@ -53,7 +53,7 @@ class PaywallScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF2E2E3D).withOpacity(0.3)),
+                border: Border.all(color: const Color(0xFF3A3A4A).withOpacity(0.3)),
               ),
               child: Column(
                 children: [

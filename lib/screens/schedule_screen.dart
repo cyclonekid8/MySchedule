@@ -45,7 +45,7 @@ class _Header extends StatelessWidget {
             children: [
               const Text('MySchedule', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -0.5)),
               Text(DateFormat('EEE dd — MMM yyyy').format(selected).toUpperCase(),
-                style: const TextStyle(fontSize: 11, color: Color(0xFF8888AA), fontFamily: 'monospace')),
+                style: const TextStyle(fontSize: 11, color: Color(0xFFAAAAAA), fontFamily: 'monospace')),
             ],
           ),
           CircleAvatar(
@@ -92,7 +92,7 @@ class _WeekStrip extends StatelessWidget {
                   children: [
                     Text(DateFormat('E').format(day).substring(0, 2),
                       style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white70 : const Color(0xFF8888AA))),
+                        color: isSelected ? Colors.white70 : const Color(0xFFAAAAAA))),
                     const SizedBox(height: 2),
                     Text('${day.day}',
                       style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
@@ -138,13 +138,13 @@ class _TimeGrid extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text('${hour.toString().padLeft(2, '0')}:00',
-                  style: const TextStyle(fontSize: 10, color: Color(0xFF8888AA), fontFamily: 'monospace')),
+                  style: const TextStyle(fontSize: 10, color: Color(0xFFAAAAAA), fontFamily: 'monospace')),
               ),
             ),
             Expanded(
               child: Column(
                 children: [
-                  Container(height: 1, color: const Color(0xFF2E2E3D)),
+                  Container(height: 1, color: const Color(0xFF3A3A4A)),
                   if (slotActivities.isEmpty)
                     const SizedBox(height: 48)
                   else
@@ -194,7 +194,7 @@ class _ActivityCard extends StatelessWidget {
                       margin: const EdgeInsets.only(right: 10),
                       decoration: BoxDecoration(
                         color: done ? const Color(0xFF43E97B) : Colors.transparent,
-                        border: Border.all(color: done ? const Color(0xFF43E97B) : const Color(0xFF2E2E3D), width: 2),
+                        border: Border.all(color: done ? const Color(0xFF43E97B) : const Color(0xFF3A3A4A), width: 2),
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: done ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
@@ -212,7 +212,7 @@ class _ActivityCard extends StatelessWidget {
                         )),
                       const SizedBox(height: 2),
                       Text('${DateFormat('HH:mm').format(activity.startTime)} – ${DateFormat('HH:mm').format(activity.endTime)}',
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF8888AA), fontFamily: 'monospace')),
+                        style: const TextStyle(fontSize: 10, color: Color(0xFFAAAAAA), fontFamily: 'monospace')),
                       const SizedBox(height: 3),
                       Row(
                         children: [

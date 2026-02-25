@@ -169,10 +169,10 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'e.g. Morning Prayer…',
-              hintStyle: const TextStyle(color: Color(0xFF8888AA)),
+              hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
               filled: true, fillColor: const Color(0xFF18181F),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2E2E3D))),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2E2E3D))),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF3A3A4A))),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF3A3A4A))),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF6C63FF))),
             ),
           ),
@@ -185,7 +185,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
             onTap: _pickDate,
             child: Container(
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: const Color(0xFF18181F), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF2E2E3D))),
+              decoration: BoxDecoration(color: const Color(0xFF18181F), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF3A3A4A))),
               child: Row(children: [
                 const Icon(Icons.calendar_today, color: Color(0xFF6C63FF), size: 18),
                 const SizedBox(width: 10),
@@ -203,7 +203,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
               onTap: () => _pickTime(true),
               child: _TimeBox(DateFormat('HH:mm').format(_startTime), 'Start'),
             )),
-            const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Icon(Icons.arrow_forward, color: Color(0xFF8888AA), size: 16)),
+            const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Icon(Icons.arrow_forward, color: Color(0xFFAAAAAA), size: 16)),
             Expanded(child: GestureDetector(
               onTap: () => _pickTime(false),
               child: _TimeBox(DateFormat('HH:mm').format(_endTime), 'End'),
@@ -251,11 +251,11 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
                 decoration: BoxDecoration(
                   color: sel ? const Color(0xFF6C63FF).withOpacity(0.2) : const Color(0xFF18181F),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: sel ? const Color(0xFF6C63FF) : const Color(0xFF2E2E3D)),
+                  border: Border.all(color: sel ? const Color(0xFF6C63FF) : const Color(0xFF3A3A4A)),
                 ),
                 child: Text(r.label, textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                    color: sel ? const Color(0xFF6C63FF) : const Color(0xFF8888AA))),
+                    color: sel ? const Color(0xFF6C63FF) : const Color(0xFFAAAAAA))),
               ),
             ));
           }).toList()),
@@ -295,10 +295,10 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
                     decoration: BoxDecoration(
                       color: sel ? const Color(0xFF6C63FF) : const Color(0xFF18181F),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: sel ? const Color(0xFF6C63FF) : const Color(0xFF2E2E3D)),
+                      border: Border.all(color: sel ? const Color(0xFF6C63FF) : const Color(0xFF3A3A4A)),
                     ),
                     child: Text('$mins min', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                      color: sel ? Colors.white : const Color(0xFF8888AA))),
+                      color: sel ? Colors.white : const Color(0xFFAAAAAA))),
                   ),
                 );
               }).toList(),
@@ -331,7 +331,7 @@ class _SectionLabel extends StatelessWidget {
   const _SectionLabel(this.text);
   @override
   Widget build(BuildContext context) => Text(text.toUpperCase(),
-    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF8888AA), letterSpacing: 0.8));
+    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFAAAAAA), letterSpacing: 0.8));
 }
 
 class _TimeBox extends StatelessWidget {
@@ -341,9 +341,9 @@ class _TimeBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(color: const Color(0xFF18181F), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF2E2E3D))),
+    decoration: BoxDecoration(color: const Color(0xFF18181F), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF3A3A4A))),
     child: Column(children: [
-      Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF8888AA))),
+      Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFFAAAAAA))),
       const SizedBox(height: 4),
       Text(time, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white, fontFamily: 'monospace')),
     ]),
@@ -361,13 +361,13 @@ class _ToggleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(color: const Color(0xFF18181F), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF2E2E3D))),
+    decoration: BoxDecoration(color: const Color(0xFF18181F), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF3A3A4A))),
     child: Row(children: [
       Icon(icon, color: const Color(0xFF6C63FF), size: 20),
       const SizedBox(width: 12),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-        Text(subtitle, style: const TextStyle(color: Color(0xFF8888AA), fontSize: 11)),
+        Text(subtitle, style: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 11)),
       ])),
       Switch(value: value, onChanged: onChanged, activeColor: const Color(0xFF6C63FF)),
     ]),

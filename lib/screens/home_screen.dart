@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final navBg = isDark ? const Color(0xFF18181F) : Colors.white;
-    final navBorder = isDark ? const Color(0xFF2E2E3D) : const Color(0xFFE0E0E0);
+    final navBorder = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
 
     return Scaffold(
       body: _screens[_currentIndex],
@@ -77,9 +77,9 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: active ? const Color(0xFF6C63FF) : const Color(0xFF8888AA), size: 22),
+            Icon(icon, color: active ? const Color(0xFF6C63FF) : const Color(0xFFAAAAAA), size: 22),
             const SizedBox(height: 3),
-            Text(label, style: TextStyle(fontSize: 10, color: active ? const Color(0xFF6C63FF) : const Color(0xFF8888AA), fontWeight: active ? FontWeight.w600 : FontWeight.normal)),
+            Text(label, style: TextStyle(fontSize: 10, color: active ? const Color(0xFF6C63FF) : const Color(0xFFAAAAAA), fontWeight: active ? FontWeight.w600 : FontWeight.normal)),
           ],
         ),
       ),

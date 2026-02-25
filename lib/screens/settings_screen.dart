@@ -73,7 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showAboutDialog() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
-    final subColor = isDark ? const Color(0xFF8888AA) : const Color(0xFF666688);
+    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -114,7 +114,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showClearDataDialog() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
-    final subColor = isDark ? const Color(0xFF8888AA) : const Color(0xFF666688);
+    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -153,9 +153,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? const Color(0xFF0F0F13) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
-    final subColor = isDark ? const Color(0xFF8888AA) : const Color(0xFF666688);
+    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
     final surface = isDark ? const Color(0xFF18181F) : const Color(0xFFF5F5F5);
-    final border = isDark ? const Color(0xFF2E2E3D) : const Color(0xFFE0E0E0);
+    final border = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
 
     return Scaffold(
       backgroundColor: bg,
@@ -362,7 +362,7 @@ class _OptionTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: selected ? const Color(0xFF6C63FF).withOpacity(0.15) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: selected ? const Color(0xFF6C63FF) : const Color(0xFF2E2E3D)),
+        border: Border.all(color: selected ? const Color(0xFF6C63FF) : const Color(0xFF3A3A4A)),
       ),
       child: Row(children: [
         Text(label, style: TextStyle(

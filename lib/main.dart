@@ -15,34 +15,16 @@ void main() async {
     statusBarIconBrightness: Brightness.light,
   ));
 
-  // Init notifications safely
-  try {
-    await NotificationService().init();
-  } catch (e) {
-    debugPrint('Notification init failed: $e');
-  }
+  try { await NotificationService().init(); } catch (e) { debugPrint('$e'); }
 
-  // Init purchase service safely
   final purchaseService = PurchaseService();
-  try {
-    await purchaseService.init();
-  } catch (e) {
-    debugPrint('Purchase init failed: $e');
-  }
+  try { await purchaseService.init(); } catch (e) { debugPrint('$e'); }
 
   final scheduleProvider = ScheduleProvider();
-  try {
-    await scheduleProvider.load();
-  } catch (e) {
-    debugPrint('Schedule load failed: $e');
-  }
+  try { await scheduleProvider.load(); } catch (e) { debugPrint('$e'); }
 
   final themeProvider = ThemeProvider();
-  try {
-    await themeProvider.init();
-  } catch (e) {
-    debugPrint('Theme init failed: $e');
-  }
+  try { await themeProvider.init(); } catch (e) { debugPrint('$e'); }
 
   runApp(
     MultiProvider(
@@ -78,10 +60,18 @@ class MyScheduleApp extends StatelessWidget {
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F0F13),
+        scaffoldBackgroundColor: const Color(0xFF0A0A0F),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF6C63FF),
-          surface: Color(0xFF18181F),
+          primary: Color(0xFF7B73FF),
+          surface: Color(0xFF16161E),
+          onSurface: Colors.white,
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+          bodyMedium: TextStyle(color: Color(0xFFE0E0FF), fontWeight: FontWeight.w400),
+          bodySmall: TextStyle(color: Color(0xFFBBBBCC)),
+          titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          titleMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         fontFamily: 'Roboto',
         useMaterial3: true,
