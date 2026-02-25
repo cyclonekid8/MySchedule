@@ -2,11 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../models/activity.dart';
 import '../providers/schedule_provider.dart';
 import 'add_activity_screen.dart';
 
 class CalendarScreen extends StatelessWidget {
   const CalendarScreen({super.key});
+
+  String _categoryEmoji(Category c) {
+    const emojis = {
+      Category.work: '💼', Category.personal: '🙋',
+      Category.healthFitness: '🏃', Category.social: '👥',
+      Category.errands: '🛒', Category.prayer: '🙏',
+      Category.tankMaintenance: '🐠', Category.crSupport: '🤝',
+      Category.laundry: '👕', Category.custom: '⭐',
+    };
+    return emojis[c] ?? '📌';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +98,7 @@ class CalendarScreen extends StatelessWidget {
                       border: Border(left: BorderSide(color: a.displayColor, width: 3)),
                     ),
                     child: Row(children: [
-                      Text(a.category.emoji),
+                      Text(_categoryEmoji(a.category)),
                       const SizedBox(width: 10),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(a.title, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
