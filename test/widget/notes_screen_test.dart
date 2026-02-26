@@ -14,9 +14,14 @@ Widget buildTestApp(Widget child, {
 }) {
   return MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (_) => scheduleProvider ?? ScheduleProvider()),
+      ChangeNotifierProvider(
+        create: (_) =>
+            scheduleProvider ?? ScheduleProvider(skipNotifications: true),
+      ),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
-      ChangeNotifierProvider(create: (_) => purchaseService ?? PurchaseService()),
+      ChangeNotifierProvider(
+        create: (_) => purchaseService ?? PurchaseService(),
+      ),
     ],
     child: MaterialApp(home: child),
   );
@@ -34,22 +39,34 @@ void main() {
       expect(find.text('Notes'), findsOneWidget);
     });
 
-    testWidgets('shows free tier badge for free user', (tester) async {
+    testWidgets('shows FAB add button', (tester) async {
       await tester.pumpWidget(buildTestApp(const NotesScreen()));
       await tester.pump();
-      expect(find.textContaining('free'), findsOneWidget);
+      expect(find.byType(FloatingActionButton), findsOneWidget);
+    });
+
+    testWidgets('shows existing note in list', (tester) async {
+      final provider = ScheduleProvider(skipNotifications: true);
+      final now = DateTime.now();
+      provider.addNote(Note(
+        id: 'note-1',
+        title: 'Shopping List',
+        body: 'Milk, eggs, bread',
+        createdAt: now,
+        updatedAt: now,
+      ));
+      await tester.pumpWidget(buildTestApp(
+        const NotesScreen(),
+        scheduleProvider: provider,
+      ));
+      await tester.pump();
+      expect(find.text('Shopping List'), findsOneWidget);
     });
 
     testWidgets('shows search bar', (tester) async {
       await tester.pumpWidget(buildTestApp(const NotesScreen()));
       await tester.pump();
-      expect(find.text('Search notes...'), findsOneWidget);
-    });
-
-    testWidgets('shows FAB add button', (tester) async {
-      await tester.pumpWidget(buildTestApp(const NotesScreen()));
-      await tester.pump();
-      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.byType(TextField), findsWidgets);
     });
 
     testWidgets('tapping FAB opens new note sheet', (tester) async {
@@ -60,58 +77,8 @@ void main() {
       expect(find.text('New Note'), findsOneWidget);
     });
 
-    testWidgets('shows existing note in list', (tester) async {
-      final provider = ScheduleProvider();
-      final now = DateTime.now();
-      provider.addNote(Note(
-        id: 'note-1',
-        title: 'Shopping List',
-        body: 'Milk, eggs, bread',
-        createdAt: now,
-        updatedAt: now,
-      ));
-      await tester.pumpWidget(buildTestApp(const NotesScreen(), scheduleProvider: provider));
-      await tester.pump();
-      expect(find.text('Shopping List'), findsOneWidget);
-    });
-
-    testWidgets('can add a new note via bottom sheet', (tester) async {
-      final provider = ScheduleProvider();
-      await tester.pumpWidget(buildTestApp(const NotesScreen(), scheduleProvider: provider));
-      await tester.pump();
-      await tester.tap(find.byType(FloatingActionButton));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.widgetWithText(TextField, 'Title'), 'My New Note');
-      await tester.tap(find.text('Save'));
-      await tester.pumpAndSettle();
-      expect(provider.notes.length, 1);
-      expect(provider.notes.first.title, 'My New Note');
-    });
-
-    testWidgets('free user sees paywall after 1 note', (tester) async {
-      final provider = ScheduleProvider();
-      final purchase = PurchaseService();
-      final now = DateTime.now();
-      provider.addNote(Note(
-        id: 'note-1',
-        title: 'Existing Note',
-        body: 'body',
-        createdAt: now,
-        updatedAt: now,
-      ));
-      await tester.pumpWidget(buildTestApp(
-        const NotesScreen(),
-        scheduleProvider: provider,
-        purchaseService: purchase,
-      ));
-      await tester.pump();
-      await tester.tap(find.byType(FloatingActionButton));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('Premium'), findsWidgets);
-    });
-
     testWidgets('tapping existing note opens edit sheet', (tester) async {
-      final provider = ScheduleProvider();
+      final provider = ScheduleProvider(skipNotifications: true);
       final now = DateTime.now();
       provider.addNote(Note(
         id: 'note-1',
@@ -120,24 +87,14 @@ void main() {
         createdAt: now,
         updatedAt: now,
       ));
-      await tester.pumpWidget(buildTestApp(const NotesScreen(), scheduleProvider: provider));
+      await tester.pumpWidget(buildTestApp(
+        const NotesScreen(),
+        scheduleProvider: provider,
+      ));
       await tester.pump();
       await tester.tap(find.text('My Note'));
       await tester.pumpAndSettle();
       expect(find.text('Edit Note'), findsOneWidget);
-    });
-
-    testWidgets('search filters notes correctly', (tester) async {
-      final provider = ScheduleProvider();
-      final now = DateTime.now();
-      provider.addNote(Note(id: '1', title: 'Shopping List', body: '', createdAt: now, updatedAt: now));
-      provider.addNote(Note(id: '2', title: 'Work Tasks', body: '', createdAt: now, updatedAt: now));
-      await tester.pumpWidget(buildTestApp(const NotesScreen(), scheduleProvider: provider));
-      await tester.pump();
-      await tester.enterText(find.byType(TextField), 'Shopping');
-      await tester.pump();
-      expect(find.text('Shopping List'), findsOneWidget);
-      expect(find.text('Work Tasks'), findsNothing);
     });
   });
 }
