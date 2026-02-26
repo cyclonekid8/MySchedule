@@ -107,13 +107,6 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Force ADB TCP socket
-        run: |
-          echo "ADB_SERVER_SOCKET=tcp:localhost:5037" >> $GITHUB_ENV
-          adb kill-server || true
-          adb start-server
-          adb devices
-
       - name: Run integration & E2E tests on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -121,6 +114,9 @@ jobs:
           arch: x86_64
           profile: Nexus 6
           script: |
+            adb kill-server || true
+            adb start-server
+            adb devices
             adb logcat -c
             adb logcat -v time *:W flutter:V > logcat.txt &
             LOGCAT_PID=$!
