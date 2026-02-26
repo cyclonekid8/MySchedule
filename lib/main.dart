@@ -15,21 +15,33 @@ void main() async {
     statusBarIconBrightness: Brightness.light,
   ));
 
+  debugPrint('🚀 App starting...');
+
   try {
+    debugPrint('🔔 Initializing notifications...');
     await NotificationService().init().timeout(
       const Duration(seconds: 5),
-      onTimeout: () => debugPrint('Notification init timed out'),
+      onTimeout: () => debugPrint('⚠️ Notification init timed out'),
     );
-  } catch (e) { debugPrint('$e'); }
+    debugPrint('✅ Notifications initialized');
+  } catch (e) { debugPrint('❌ Notification error: $e'); }
 
   final purchaseService = PurchaseService();
-  try { await purchaseService.init(); } catch (e) { debugPrint('$e'); }
+  debugPrint('💰 Initializing purchase service...');
+  try { await purchaseService.init(); } catch (e) { debugPrint('❌ Purchase error: $e'); }
+  debugPrint('✅ Purchase service initialized');
 
   final scheduleProvider = ScheduleProvider();
-  try { await scheduleProvider.load(); } catch (e) { debugPrint('$e'); }
+  debugPrint('📅 Loading schedule...');
+  try { await scheduleProvider.load(); } catch (e) { debugPrint('❌ Schedule error: $e'); }
+  debugPrint('✅ Schedule loaded');
 
   final themeProvider = ThemeProvider();
-  try { await themeProvider.init(); } catch (e) { debugPrint('$e'); }
+  debugPrint('🎨 Initializing theme...');
+  try { await themeProvider.init(); } catch (e) { debugPrint('❌ Theme error: $e'); }
+  debugPrint('✅ Theme initialized');
+
+  debugPrint('🏁 Running app...');
 
   runApp(
     MultiProvider(
