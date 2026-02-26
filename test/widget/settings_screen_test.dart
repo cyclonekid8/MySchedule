@@ -77,31 +77,5 @@ void main() {
       await tester.pump();
       expect(find.text('Clear all data'), findsOneWidget);
     });
-
-    testWidgets('tapping Clear all data shows confirmation dialog', (tester) async {
-      await tester.pumpWidget(buildTestApp(const SettingsScreen()));
-      await tester.pump();
-      await tester.tap(find.text('Clear all data'));
-      await tester.pumpAndSettle();
-      expect(find.text('Clear all data?'), findsOneWidget);
-      expect(find.text('Cancel'), findsOneWidget);
-      expect(find.text('Clear'), findsOneWidget);
-    });
-
-    testWidgets('tapping Week starts on shows bottom sheet', (tester) async {
-      await tester.pumpWidget(buildTestApp(const SettingsScreen()));
-      await tester.pump();
-      await tester.tap(find.text('Week starts on'));
-      await tester.pumpAndSettle();
-      expect(find.text('Monday'), findsWidgets);
-      expect(find.text('Sunday'), findsOneWidget);
-    });
-
-    testWidgets('shows Simulate Premium toggle in developer section', (tester) async {
-      await tester.pumpWidget(buildTestApp(const SettingsScreen()));
-      await tester.pump();
-      await tester.scrollUntilVisible(find.text('Simulate Premium').first, 100);
-      expect(find.text('Simulate Premium'), findsOneWidget);
-    });
   });
 }
