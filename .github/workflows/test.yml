@@ -78,7 +78,7 @@ jobs:
   # ── Job 2: Integration / E2E Tests ────────────────────────────────
   integration_tests:
     name: Integration & E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: macos-13
     needs: unit_and_widget_tests
 
     steps:
@@ -101,12 +101,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Enable KVM
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
       - name: Run integration & E2E tests on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -114,24 +108,11 @@ jobs:
           arch: x86_64
           profile: Nexus 6
           script: |
-            adb kill-server || true
-            adb start-server
-            adb devices
-            adb wait-for-device
-            adb reverse tcp:8081 tcp:8081 || true
-            adb reverse tcp:9090 tcp:9090 || true
-            adb reverse --list
             adb shell settings put global window_animation_scale 0
             adb shell settings put global transition_animation_scale 0
             adb shell settings put global animator_duration_scale 0
-            adb logcat -c
-            adb logcat -v time *:W flutter:V > logcat.txt &
-            LOGCAT_PID=$!
-            flutter build apk --debug
-            adb install build/app/outputs/flutter-apk/app-debug.apk
             adb shell pm grant com.cyclonekid.myschedule android.permission.POST_NOTIFICATIONS 2>/dev/null || true
-            flutter test integration_test/app_test.dart -d emulator-5554 --reporter=expanded --timeout=300s -v
-            kill $LOGCAT_PID || true
+            flutter test integration_test/app_test.dart --reporter=expanded --timeout=300s
 
       - name: Upload logcat on failure
         if: failure()
