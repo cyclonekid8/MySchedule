@@ -79,12 +79,17 @@ jobs:
   integration_tests:
     name: Integration & E2E Tests
     runs-on: ubuntu-latest
-    # Run after unit tests pass
     needs: unit_and_widget_tests
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -96,50 +101,26 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Enable KVM for Android emulator
+      - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Run integration & E2E tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: Nexus 6
+          script: flutter test integration_test/app_test.dart --reporter=expanded
 
-      - name: Accept Android licenses
-        run: yes | sdkmanager --licenses || true
-
-      - name: Install Android emulator
-        run: |
-          sdkmanager "platform-tools" "emulator"
-          sdkmanager "system-images;android-34;google_apis;x86_64"
-          echo "no" | avdmanager create avd -n test_avd -k "system-images;android-34;google_apis;x86_64" --force
-
-      - name: Start Android emulator
-        run: |
-          $ANDROID_HOME/emulator/emulator -avd test_avd -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
-          adb wait-for-device
-          adb shell input keyevent 82
-          echo "Emulator started"
-
-      - name: Wait for emulator to be ready
-        run: |
-          adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 3; done'
-          echo "Emulator is ready"
-
-      - name: Run integration & E2E tests
-        run: |
-          flutter test integration_test/app_test.dart \
-            --reporter=expanded \
-            -d emulator-5554
-
-      - name: Upload E2E test screenshots on failure
+      - name: Upload E2E screenshots on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-failure-screenshots
-          path: |
-            *.png
-            screenshots/
+          path: screenshots/
 
   # ── Job 3: Build APK (only if all tests pass) ──────────────────────
   build_apk:
