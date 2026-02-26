@@ -113,7 +113,10 @@ jobs:
           api-level: 34
           arch: x86_64
           profile: Nexus 6
-          script: flutter test integration_test/app_test.dart --reporter=expanded
+          script: |
+            adb shell pm grant com.cyclonekid.myschedule android.permission.POST_NOTIFICATIONS || true
+            adb shell pm grant com.cyclonekid.myschedule android.permission.SCHEDULE_EXACT_ALARM || true
+            flutter test integration_test/app_test.dart --reporter=expanded --timeout=300s
 
       - name: Upload E2E screenshots on failure
         if: failure()
