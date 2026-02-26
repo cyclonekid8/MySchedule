@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myschedule/models/activity.dart';
 import 'package:myschedule/providers/schedule_provider.dart';
 import 'package:myschedule/providers/theme_provider.dart';
 import 'package:myschedule/services/purchase_service.dart';

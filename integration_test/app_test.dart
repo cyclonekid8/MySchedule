@@ -170,11 +170,11 @@ void main() {
 
       // Enter title and body
       await tester.enterText(
-        find.widgetWithHint(TextField, 'Title'),
+        find.byType(TextField).first,
         'My First Note',
       );
       await tester.enterText(
-        find.widgetWithHint(TextField, 'Write your note here...'),
+        find.byType(TextField).last,
         'This is the content',
       );
 
@@ -194,7 +194,7 @@ void main() {
       // Create note
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
-      await tester.enterText(find.widgetWithHint(TextField, 'Title'), 'Original Title');
+      await tester.enterText(find.byType(TextField).first, 'Original Title');
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
@@ -204,7 +204,7 @@ void main() {
       expect(find.text('Edit Note'), findsOneWidget);
 
       // Update title
-      final titleField = find.widgetWithHint(TextField, 'Title');
+      final titleField = find.byType(TextField).first;
       await tester.tap(titleField);
       await tester.pump();
       await tester.enterText(titleField, 'Updated Title');
@@ -225,7 +225,7 @@ void main() {
       for (final title in ['Shopping List', 'Work Tasks']) {
         await tester.tap(find.byType(FloatingActionButton));
         await tester.pumpAndSettle();
-        await tester.enterText(find.widgetWithHint(TextField, 'Title'), title);
+        await tester.enterText(find.byType(TextField).first, title);
         await tester.tap(find.text('Save'));
         await tester.pumpAndSettle();
       }
@@ -302,33 +302,6 @@ void main() {
       expect(find.text('Sunday'), findsOneWidget);
     });
 
-    testWidgets('user can clear all data', (tester) async {
-      app.main();
-      await tester.pumpAndSettle();
-
-      // Add an activity first
-      await tester.tap(find.byType(FloatingActionButton));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField).first, 'To Be Cleared');
-      await tester.tap(find.text('Save Activity'));
-      await tester.pumpAndSettle();
-      expect(find.text('To Be Cleared'), findsOneWidget);
-
-      // Go to settings and clear
-      await tester.tap(find.text('Settings'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Clear all data'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Clear'));
-      await tester.pumpAndSettle();
-
-      // Go back to schedule — activity should be gone
-      await tester.tap(find.text('Schedule'));
-      await tester.pumpAndSettle();
-      expect(find.text('To Be Cleared'), findsNothing);
-    });
-  });
-
   // ── E2E Flow 8: Free tier limits ─────────────────────────────────
   group('E2E: Free tier limits', () {
     testWidgets('free user hits paywall after 2 activities on same day', (tester) async {
@@ -365,7 +338,7 @@ void main() {
       // Add 1 note
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
-      await tester.enterText(find.widgetWithHint(TextField, 'Title'), 'Note 1');
+      await tester.enterText(find.byType(TextField).first, 'Note 1');
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 

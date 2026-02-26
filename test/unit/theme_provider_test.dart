@@ -13,25 +13,29 @@ void main() {
       await provider.init();
     });
 
-    test('defaults to system theme mode', () {
-      expect(provider.themeMode, ThemeMode.system);
+    test('defaults to dark mode', () {
+      expect(provider.isDark, true);
+      expect(provider.themeMode, ThemeMode.dark);
     });
 
-    test('toggleTheme switches to light mode', () async {
-      await provider.toggleTheme(true);
+    test('toggle switches to light mode', () async {
+      await provider.toggle();
+      expect(provider.isDark, false);
       expect(provider.themeMode, ThemeMode.light);
     });
 
-    test('toggleTheme switches back to dark mode', () async {
-      await provider.toggleTheme(true);
-      await provider.toggleTheme(false);
+    test('toggle switches back to dark mode', () async {
+      await provider.toggle();
+      await provider.toggle();
+      expect(provider.isDark, true);
       expect(provider.themeMode, ThemeMode.dark);
     });
 
     test('theme preference persists after reinit', () async {
-      await provider.toggleTheme(true);
+      await provider.toggle(); // switch to light
       final provider2 = ThemeProvider();
       await provider2.init();
+      expect(provider2.isDark, false);
       expect(provider2.themeMode, ThemeMode.light);
     });
   });
