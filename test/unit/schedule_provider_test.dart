@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myschedule/models/activity.dart';
 import 'package:myschedule/models/note.dart';
 import 'package:myschedule/providers/schedule_provider.dart';
+import '../mocks/mock_notification_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +14,7 @@ void main() {
 
     setUp(() async {
       SharedPreferences.setMockInitialValues({});
-      provider = ScheduleProvider();
+      provider = ScheduleProvider(notificationService: MockNotificationService());
       await provider.load();
     });
 
@@ -183,7 +184,7 @@ void main() {
       await provider.addActivity(makeActivity(title: 'Persistent Activity'));
       provider.addNote(makeNote(title: 'Persistent Note'));
 
-      final provider2 = ScheduleProvider();
+      final provider2 = ScheduleProvider(notificationService: MockNotificationService());
       await provider2.load();
 
       expect(provider2.activities.length, 1);

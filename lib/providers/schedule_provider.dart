@@ -11,7 +11,10 @@ class ScheduleProvider extends ChangeNotifier {
   List<Note> _notes = [];
   DateTime _selectedDay = DateTime.now();
   final _uuid = const Uuid();
-  final _notifService = NotificationService();
+  final NotificationService _notifService;
+
+  ScheduleProvider({NotificationService? notificationService})
+      : _notifService = notificationService ?? NotificationService();
 
   List<Activity> get activities => _activities;
   List<Note> get notes => _notes;
@@ -72,6 +75,16 @@ class ScheduleProvider extends ChangeNotifier {
     await _notifService.cancelActivityReminder(id);
     _activities.removeWhere((a) => a.id == id);
     await _save();
+    notifyListeners();
+  }
+
+  Future<void> clearAll() async {
+    await _notifService.cancelAll();
+    _activities = [];
+    _notes = [];
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('activities');
+    await prefs.remove('notes');
     notifyListeners();
   }
 
