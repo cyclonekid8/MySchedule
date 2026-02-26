@@ -58,7 +58,7 @@ void main() {
     });
 
     testWidgets('shows activity card when activity exists', (tester) async {
-      final provider = ScheduleProvider();
+      final provider = ScheduleProvider(skipNotifications: true);
       SharedPreferences.setMockInitialValues({});
       final today = DateTime.now();
       await provider.addActivity(Activity(
@@ -70,11 +70,12 @@ void main() {
       ));
       await tester.pumpWidget(buildTestApp(const ScheduleScreen(), scheduleProvider: provider));
       await tester.pump();
+      await tester.scrollUntilVisible(find.text('Morning Prayer'), 100);
       expect(find.text('Morning Prayer'), findsOneWidget);
     });
 
     testWidgets('long pressing activity shows edit and delete options', (tester) async {
-      final provider = ScheduleProvider();
+      final provider = ScheduleProvider(skipNotifications: true);
       SharedPreferences.setMockInitialValues({});
       final today = DateTime.now();
       await provider.addActivity(Activity(
@@ -86,6 +87,7 @@ void main() {
       ));
       await tester.pumpWidget(buildTestApp(const ScheduleScreen(), scheduleProvider: provider));
       await tester.pump();
+      await tester.scrollUntilVisible(find.text('Morning Prayer'), 100);
       await tester.longPress(find.text('Morning Prayer'));
       await tester.pumpAndSettle();
       expect(find.text('Edit'), findsOneWidget);
@@ -93,7 +95,7 @@ void main() {
     });
 
     testWidgets('deleting activity removes it from list', (tester) async {
-      final provider = ScheduleProvider();
+      final provider = ScheduleProvider(skipNotifications: true);
       SharedPreferences.setMockInitialValues({});
       final today = DateTime.now();
       await provider.addActivity(Activity(
@@ -105,6 +107,7 @@ void main() {
       ));
       await tester.pumpWidget(buildTestApp(const ScheduleScreen(), scheduleProvider: provider));
       await tester.pump();
+      await tester.scrollUntilVisible(find.text('Morning Prayer'), 100);
       await tester.longPress(find.text('Morning Prayer'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Delete'));
