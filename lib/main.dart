@@ -15,7 +15,12 @@ void main() async {
     statusBarIconBrightness: Brightness.light,
   ));
 
-  try { await NotificationService().init(); } catch (e) { debugPrint('$e'); }
+  try {
+    await NotificationService().init().timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => debugPrint('Notification init timed out'),
+    );
+  } catch (e) { debugPrint('$e'); }
 
   final purchaseService = PurchaseService();
   try { await purchaseService.init(); } catch (e) { debugPrint('$e'); }
