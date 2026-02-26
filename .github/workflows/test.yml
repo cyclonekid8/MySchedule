@@ -117,15 +117,20 @@ jobs:
             adb kill-server || true
             adb start-server
             adb devices
+            adb wait-for-device
+            adb reverse tcp:8081 tcp:8081 || true
+            adb reverse tcp:9090 tcp:9090 || true
+            adb reverse --list
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
             adb logcat -c
             adb logcat -v time *:W flutter:V > logcat.txt &
             LOGCAT_PID=$!
             flutter build apk --debug
             adb install build/app/outputs/flutter-apk/app-debug.apk
             adb shell pm grant com.cyclonekid.myschedule android.permission.POST_NOTIFICATIONS 2>/dev/null || true
-            adb reverse tcp:8080 tcp:8080 || true
-            adb reverse tcp:9000 tcp:9000 || true
-            flutter test integration_test/app_test.dart --reporter=expanded --timeout=300s
+            flutter test integration_test/app_test.dart -d emulator-5554 --reporter=expanded --timeout=300s -v
             kill $LOGCAT_PID || true
 
       - name: Upload logcat on failure
