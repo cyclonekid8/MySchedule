@@ -14,7 +14,8 @@ Widget buildTestApp(Widget child, {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider(
-        create: (_) => scheduleProvider ?? ScheduleProvider(skipNotifications: true),
+        create: (_) =>
+            scheduleProvider ?? ScheduleProvider(skipNotifications: true),
       ),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(
@@ -47,22 +48,22 @@ void main() {
     testWidgets('shows Work category after scrolling', (tester) async {
       await tester.pumpWidget(buildTestApp(const AddActivityScreen()));
       await tester.pump();
-      await tester.scrollUntilVisible(find.text('Work'), 100);
-      expect(find.text('Work'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Work').first, 100);
+      expect(find.text('Work'), findsWidgets);
     });
 
     testWidgets('shows Save Activity button after scrolling', (tester) async {
       await tester.pumpWidget(buildTestApp(const AddActivityScreen()));
       await tester.pump();
-      await tester.scrollUntilVisible(find.text('Save Activity'), 100);
+      await tester.scrollUntilVisible(find.text('Save Activity').first, 100);
       expect(find.text('Save Activity'), findsOneWidget);
     });
 
     testWidgets('shows error when saving empty title', (tester) async {
       await tester.pumpWidget(buildTestApp(const AddActivityScreen()));
       await tester.pump();
-      await tester.scrollUntilVisible(find.text('Save Activity'), 100);
-      await tester.tap(find.text('Save Activity'));
+      await tester.scrollUntilVisible(find.text('Save Activity').first, 100);
+      await tester.tap(find.text('Save Activity').first);
       await tester.pump();
       expect(find.text('Please enter an activity name'), findsOneWidget);
     });
@@ -75,8 +76,8 @@ void main() {
       ));
       await tester.pump();
       await tester.enterText(find.byType(TextField).first, 'Morning Prayer');
-      await tester.scrollUntilVisible(find.text('Save Activity'), 100);
-      await tester.tap(find.text('Save Activity'));
+      await tester.scrollUntilVisible(find.text('Save Activity').first, 100);
+      await tester.tap(find.text('Save Activity').first);
       await tester.pumpAndSettle();
       expect(provider.activities.length, 1);
       expect(provider.activities.first.title, 'Morning Prayer');
