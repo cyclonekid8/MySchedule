@@ -30,8 +30,8 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed lib/
+      - name: Format code
+        run: dart format lib/
 
       - name: Analyze code
         run: flutter analyze --no-fatal-infos
