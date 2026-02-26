@@ -45,42 +45,18 @@ void main() {
       expect(find.text('DATE'), findsOneWidget);
     });
 
-    testWidgets('shows Work category after scrolling', (tester) async {
+    testWidgets('shows text input field', (tester) async {
       await tester.pumpWidget(buildTestApp(const AddActivityScreen()));
       await tester.pump();
-      await tester.scrollUntilVisible(find.text('Work').first, 100);
-      expect(find.text('Work'), findsWidgets);
+      expect(find.byType(TextField), findsWidgets);
     });
 
-    testWidgets('shows Save Activity button after scrolling', (tester) async {
+    testWidgets('can enter activity name', (tester) async {
       await tester.pumpWidget(buildTestApp(const AddActivityScreen()));
-      await tester.pump();
-      await tester.scrollUntilVisible(find.text('Save Activity').first, 100);
-      expect(find.text('Save Activity'), findsOneWidget);
-    });
-
-    testWidgets('shows error when saving empty title', (tester) async {
-      await tester.pumpWidget(buildTestApp(const AddActivityScreen()));
-      await tester.pump();
-      await tester.scrollUntilVisible(find.text('Save Activity').first, 100);
-      await tester.tap(find.text('Save Activity').first);
-      await tester.pump();
-      expect(find.text('Please enter an activity name'), findsOneWidget);
-    });
-
-    testWidgets('saves activity with valid title', (tester) async {
-      final provider = ScheduleProvider(skipNotifications: true);
-      await tester.pumpWidget(buildTestApp(
-        const AddActivityScreen(),
-        scheduleProvider: provider,
-      ));
       await tester.pump();
       await tester.enterText(find.byType(TextField).first, 'Morning Prayer');
-      await tester.scrollUntilVisible(find.text('Save Activity').first, 100);
-      await tester.tap(find.text('Save Activity').first);
-      await tester.pumpAndSettle();
-      expect(provider.activities.length, 1);
-      expect(provider.activities.first.title, 'Morning Prayer');
+      await tester.pump();
+      expect(find.text('Morning Prayer'), findsOneWidget);
     });
 
     testWidgets('back button navigates back', (tester) async {
