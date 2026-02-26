@@ -1,0 +1,199 @@
+name: MySchedule Tests
+
+on:
+  push:
+    branches:
+      - premium-features-testing
+      - premium-features-sharpen
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # ── Job 1: Unit & Widget Tests ─────────────────────────────────────
+  unit_and_widget_tests:
+    name: Unit & Widget Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed lib/
+
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run unit tests - Activity Model
+        run: flutter test test/unit/activity_model_test.dart --reporter=expanded
+
+      - name: Run unit tests - Note Model
+        run: flutter test test/unit/note_model_test.dart --reporter=expanded
+
+      - name: Run unit tests - ScheduleProvider
+        run: flutter test test/unit/schedule_provider_test.dart --reporter=expanded
+
+      - name: Run unit tests - PurchaseService
+        run: flutter test test/unit/purchase_service_test.dart --reporter=expanded
+
+      - name: Run unit tests - ThemeProvider
+        run: flutter test test/unit/theme_provider_test.dart --reporter=expanded
+
+      - name: Run widget tests - Schedule Screen
+        run: flutter test test/widget/schedule_screen_test.dart --reporter=expanded
+
+      - name: Run widget tests - Calendar Screen
+        run: flutter test test/widget/calendar_screen_test.dart --reporter=expanded
+
+      - name: Run widget tests - Add Activity Screen
+        run: flutter test test/widget/add_activity_screen_test.dart --reporter=expanded
+
+      - name: Run widget tests - Notes Screen
+        run: flutter test test/widget/notes_screen_test.dart --reporter=expanded
+
+      - name: Run widget tests - Settings Screen
+        run: flutter test test/widget/settings_screen_test.dart --reporter=expanded
+
+      - name: Generate test coverage report
+        run: flutter test --coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/lcov.info
+
+  # ── Job 2: Integration / E2E Tests ────────────────────────────────
+  integration_tests:
+    name: Integration & E2E Tests
+    runs-on: ubuntu-latest
+    # Run after unit tests pass
+    needs: unit_and_widget_tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Enable KVM for Android emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Install Android emulator
+        run: |
+          sdkmanager "platform-tools" "emulator"
+          sdkmanager "system-images;android-34;google_apis;x86_64"
+          echo "no" | avdmanager create avd -n test_avd -k "system-images;android-34;google_apis;x86_64" --force
+
+      - name: Start Android emulator
+        run: |
+          $ANDROID_HOME/emulator/emulator -avd test_avd -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
+          adb wait-for-device
+          adb shell input keyevent 82
+          echo "Emulator started"
+
+      - name: Wait for emulator to be ready
+        run: |
+          adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 3; done'
+          echo "Emulator is ready"
+
+      - name: Run integration & E2E tests
+        run: |
+          flutter test integration_test/app_test.dart \
+            --reporter=expanded \
+            -d emulator-5554
+
+      - name: Upload E2E test screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure-screenshots
+          path: |
+            *.png
+            screenshots/
+
+  # ── Job 3: Build APK (only if all tests pass) ──────────────────────
+  build_apk:
+    name: Build & Sign APK
+    runs-on: ubuntu-latest
+    needs: [unit_and_widget_tests, integration_tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+
+      - name: Create key.properties
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=keystore.jks
+          EOF
+
+      - name: Build signed APK (with split-debug-info for smaller size)
+        run: |
+          flutter build apk --release \
+            --split-debug-info=build/debug-info \
+            --obfuscate
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MySchedule-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-symbols
+          path: build/debug-info/
