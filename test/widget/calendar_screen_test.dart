@@ -13,7 +13,7 @@ Widget buildTestApp(Widget child, {ScheduleProvider? scheduleProvider}) {
     providers: [
       ChangeNotifierProvider(create: (_) => scheduleProvider ?? ScheduleProvider()),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
-      ChangeNotifierProvider(create: (_) => PurchaseService()),
+      ChangeNotifierProvider.value(value: PurchaseService()),
     ],
     child: MaterialApp(home: child),
   );

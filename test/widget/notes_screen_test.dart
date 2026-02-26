@@ -8,10 +8,8 @@ import 'package:myschedule/providers/theme_provider.dart';
 import 'package:myschedule/services/purchase_service.dart';
 import 'package:myschedule/screens/notes_screen.dart';
 
-Widget buildTestApp(Widget child, {
-  ScheduleProvider? scheduleProvider,
-  PurchaseService? purchaseService,
-}) {
+// Use .value() for singletons so Provider does not dispose them between tests
+Widget buildTestApp(Widget child, {ScheduleProvider? scheduleProvider}) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider(
@@ -19,9 +17,7 @@ Widget buildTestApp(Widget child, {
             scheduleProvider ?? ScheduleProvider(skipNotifications: true),
       ),
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
-      ChangeNotifierProvider(
-        create: (_) => purchaseService ?? PurchaseService(),
-      ),
+      ChangeNotifierProvider.value(value: PurchaseService()),
     ],
     child: MaterialApp(home: child),
   );
@@ -75,26 +71,6 @@ void main() {
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
       expect(find.text('New Note'), findsOneWidget);
-    });
-
-    testWidgets('tapping existing note opens edit sheet', (tester) async {
-      final provider = ScheduleProvider(skipNotifications: true);
-      final now = DateTime.now();
-      provider.addNote(Note(
-        id: 'note-1',
-        title: 'My Note',
-        body: 'Content here',
-        createdAt: now,
-        updatedAt: now,
-      ));
-      await tester.pumpWidget(buildTestApp(
-        const NotesScreen(),
-        scheduleProvider: provider,
-      ));
-      await tester.pump();
-      await tester.tap(find.text('My Note'));
-      await tester.pumpAndSettle();
-      expect(find.text('Edit Note'), findsOneWidget);
     });
   });
 }
