@@ -107,6 +107,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: Force ADB TCP socket
+        run: |
+          echo "ADB_SERVER_SOCKET=tcp:localhost:5037" >> $GITHUB_ENV
+          adb kill-server || true
+          adb start-server
+          adb devices
+
       - name: Run integration & E2E tests on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -120,7 +127,9 @@ jobs:
             flutter build apk --debug
             adb install build/app/outputs/flutter-apk/app-debug.apk
             adb shell pm grant com.cyclonekid.myschedule android.permission.POST_NOTIFICATIONS 2>/dev/null || true
-            flutter test integration_test/app_test.dart --reporter=expanded --timeout=300s --no-dds
+            adb reverse tcp:8080 tcp:8080 || true
+            adb reverse tcp:9000 tcp:9000 || true
+            flutter test integration_test/app_test.dart --reporter=expanded --timeout=300s
             kill $LOGCAT_PID || true
 
       - name: Upload logcat on failure
