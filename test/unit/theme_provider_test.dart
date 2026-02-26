@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myschedule/providers/theme_provider.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('ThemeProvider', () {
     late ThemeProvider provider;
 

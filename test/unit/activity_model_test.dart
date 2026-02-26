@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:myschedule/models/activity.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('Activity Model', () {
     late Activity activity;
 

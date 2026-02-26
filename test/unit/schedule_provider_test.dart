@@ -5,6 +5,7 @@ import 'package:myschedule/models/note.dart';
 import 'package:myschedule/providers/schedule_provider.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('ScheduleProvider', () {
     late ScheduleProvider provider;
     final today = DateTime.now();

@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myschedule/services/purchase_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('PurchaseService', () {
     late PurchaseService service;
 

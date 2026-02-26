@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:myschedule/models/note.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('Note Model', () {
     late Note note;
     final now = DateTime(2026, 2, 25, 10, 0);
