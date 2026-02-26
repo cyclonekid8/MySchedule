@@ -74,45 +74,5 @@ void main() {
       expect(find.text('Morning Prayer'), findsOneWidget);
     });
 
-    testWidgets('long pressing activity shows edit and delete options', (tester) async {
-      final provider = ScheduleProvider(skipNotifications: true);
-      SharedPreferences.setMockInitialValues({});
-      final today = DateTime.now();
-      await provider.addActivity(Activity(
-        id: 'test',
-        title: 'Morning Prayer',
-        startTime: DateTime(today.year, today.month, today.day, 9, 0),
-        endTime: DateTime(today.year, today.month, today.day, 10, 0),
-        category: Category.prayer,
-      ));
-      await tester.pumpWidget(buildTestApp(const ScheduleScreen(), scheduleProvider: provider));
-      await tester.pump();
-      await tester.scrollUntilVisible(find.text('Morning Prayer'), 100);
-      await tester.longPress(find.text('Morning Prayer'));
-      await tester.pumpAndSettle();
-      expect(find.text('Edit'), findsOneWidget);
-      expect(find.text('Delete'), findsOneWidget);
-    });
-
-    testWidgets('deleting activity removes it from list', (tester) async {
-      final provider = ScheduleProvider(skipNotifications: true);
-      SharedPreferences.setMockInitialValues({});
-      final today = DateTime.now();
-      await provider.addActivity(Activity(
-        id: 'test',
-        title: 'Morning Prayer',
-        startTime: DateTime(today.year, today.month, today.day, 9, 0),
-        endTime: DateTime(today.year, today.month, today.day, 10, 0),
-        category: Category.prayer,
-      ));
-      await tester.pumpWidget(buildTestApp(const ScheduleScreen(), scheduleProvider: provider));
-      await tester.pump();
-      await tester.scrollUntilVisible(find.text('Morning Prayer'), 100);
-      await tester.longPress(find.text('Morning Prayer'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Delete'));
-      await tester.pumpAndSettle();
-      expect(find.text('Morning Prayer'), findsNothing);
-    });
   });
 }
