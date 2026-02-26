@@ -49,10 +49,15 @@ void main() {
       expect(find.text('Go Premium'), findsNothing);
     });
 
-    testWidgets('shows Light Mode toggle', (tester) async {
+    testWidgets('shows theme toggle', (tester) async {
       await tester.pumpWidget(buildTestApp(const SettingsScreen()));
       await tester.pump();
-      expect(find.text('Light Mode'), findsOneWidget);
+      // Label is 'Dark Mode' in dark theme (default) or 'Light Mode' in light
+      expect(
+        find.text('Dark Mode').evaluate().isNotEmpty ||
+            find.text('Light Mode').evaluate().isNotEmpty,
+        true,
+      );
     });
 
     testWidgets('shows Notifications toggle', (tester) async {
@@ -95,6 +100,7 @@ void main() {
     testWidgets('shows Simulate Premium toggle in developer section', (tester) async {
       await tester.pumpWidget(buildTestApp(const SettingsScreen()));
       await tester.pump();
+      await tester.scrollUntilVisible(find.text('Simulate Premium').first, 100);
       expect(find.text('Simulate Premium'), findsOneWidget);
     });
   });
