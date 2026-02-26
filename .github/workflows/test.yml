@@ -119,8 +119,7 @@ jobs:
             LOGCAT_PID=$!
             flutter build apk --debug
             adb install build/app/outputs/flutter-apk/app-debug.apk
-            adb shell pm grant com.cyclonekid.myschedule android.permission.POST_NOTIFICATIONS || true
-            adb shell pm grant com.cyclonekid.myschedule android.permission.SCHEDULE_EXACT_ALARM || true
+            adb shell pm grant com.cyclonekid.myschedule android.permission.POST_NOTIFICATIONS 2>/dev/null || true
             flutter test integration_test/app_test.dart --reporter=expanded --timeout=300s --no-dds
             kill $LOGCAT_PID || true
 
