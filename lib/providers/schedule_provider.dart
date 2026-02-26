@@ -11,10 +11,13 @@ class ScheduleProvider extends ChangeNotifier {
   List<Note> _notes = [];
   DateTime _selectedDay = DateTime.now();
   final _uuid = const Uuid();
-  final NotificationService _notifService;
+  final bool _skipNotifications;
 
-  ScheduleProvider({NotificationService? notificationService})
-      : _notifService = notificationService ?? NotificationService();
+  ScheduleProvider({bool skipNotifications = false})
+      : _skipNotifications = skipNotifications;
+
+  NotificationService? get _notifService =>
+      _skipNotifications ? null : NotificationService();
 
   List<Activity> get activities => _activities;
   List<Note> get notes => _notes;
@@ -44,7 +47,7 @@ class ScheduleProvider extends ChangeNotifier {
 
   Future<void> addActivity(Activity activity) async {
     _activities.add(activity);
-    await _notifService.scheduleActivityReminder(activity);
+    await _notifService?.scheduleActivityReminder(activity);
     await _save();
     notifyListeners();
   }
@@ -53,8 +56,8 @@ class ScheduleProvider extends ChangeNotifier {
     final idx = _activities.indexWhere((a) => a.id == activity.id);
     if (idx != -1) {
       _activities[idx] = activity;
-      await _notifService.cancelActivityReminder(activity.id);
-      await _notifService.scheduleActivityReminder(activity);
+      await _notifService?.cancelActivityReminder(activity.id);
+      await _notifService?.scheduleActivityReminder(activity);
       await _save();
       notifyListeners();
     }
@@ -72,14 +75,14 @@ class ScheduleProvider extends ChangeNotifier {
   }
 
   Future<void> deleteActivity(String id) async {
-    await _notifService.cancelActivityReminder(id);
+    await _notifService?.cancelActivityReminder(id);
     _activities.removeWhere((a) => a.id == id);
     await _save();
     notifyListeners();
   }
 
   Future<void> clearAll() async {
-    await _notifService.cancelAll();
+    await _notifService?.cancelAll();
     _activities = [];
     _notes = [];
     final prefs = await SharedPreferences.getInstance();
