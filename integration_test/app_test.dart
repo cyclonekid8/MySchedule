@@ -14,7 +14,7 @@ void main() {
   // ── E2E Flow 1: First time user adds an activity ──────────────────
   group('E2E: Adding an activity', () {
     testWidgets('user can add a new activity from Schedule screen', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Tap FAB on schedule screen
@@ -39,7 +39,7 @@ void main() {
     });
 
     testWidgets('user can add activity from Calendar screen', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Navigate to Calendar tab
@@ -63,7 +63,7 @@ void main() {
   // ── E2E Flow 2: Edit an existing activity ─────────────────────────
   group('E2E: Editing an activity', () {
     testWidgets('user can edit activity title via long press', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Add activity first
@@ -100,7 +100,7 @@ void main() {
   // ── E2E Flow 3: Delete an activity ───────────────────────────────
   group('E2E: Deleting an activity', () {
     testWidgets('user can delete activity via long press', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Add activity
@@ -125,7 +125,7 @@ void main() {
   // ── E2E Flow 4: Mark activity as done ────────────────────────────
   group('E2E: Marking activity as done', () {
     testWidgets('user can toggle done checkbox on activity', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Add activity with completion tracking
@@ -155,7 +155,7 @@ void main() {
   // ── E2E Flow 5: Notes flow ────────────────────────────────────────
   group('E2E: Notes', () {
     testWidgets('user can create and view a note', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Navigate to Notes tab
@@ -185,7 +185,7 @@ void main() {
     });
 
     testWidgets('user can edit an existing note', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       await tester.tap(find.text('Notes'));
@@ -215,7 +215,7 @@ void main() {
     });
 
     testWidgets('user can search notes', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       await tester.tap(find.text('Notes'));
@@ -242,7 +242,7 @@ void main() {
   // ── E2E Flow 6: Navigation between tabs ──────────────────────────
   group('E2E: Tab navigation', () {
     testWidgets('user can navigate between all tabs', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Schedule (default)
@@ -273,7 +273,7 @@ void main() {
   // ── E2E Flow 7: Settings ─────────────────────────────────────────
   group('E2E: Settings', () {
     testWidgets('user can toggle light mode', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       await tester.tap(find.text('Settings'));
@@ -286,7 +286,7 @@ void main() {
     });
 
     testWidgets('user can change week start day', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       await tester.tap(find.text('Settings'));
@@ -306,7 +306,7 @@ void main() {
   // ── E2E Flow 8: Free tier limits ─────────────────────────────────
   group('E2E: Free tier limits', () {
     testWidgets('free user hits paywall after 2 activities on same day', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Add 2 activities
@@ -330,7 +330,7 @@ void main() {
     });
 
     testWidgets('free user hits paywall after 1 note', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       await tester.tap(find.text('Notes'));
@@ -354,7 +354,7 @@ void main() {
   // ── E2E Flow 9: Premium simulate toggle ──────────────────────────
   group('E2E: Simulate Premium', () {
     testWidgets('enabling simulate premium removes limits', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Enable simulate premium in settings
@@ -387,7 +387,7 @@ void main() {
   // ── E2E Flow 10: Data persistence across app restart ─────────────
   group('E2E: Data persistence', () {
     testWidgets('activity persists after provider reload', (tester) async {
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // Add activity
@@ -401,7 +401,7 @@ void main() {
 
       // Re-launch app (simulated by restarting widget)
       await tester.pumpWidget(const SizedBox());
-      await app.main();
+      app.main();
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       expect(find.text('Persistent Task'), findsOneWidget);
