@@ -66,6 +66,7 @@ class CalendarScreen extends StatelessWidget {
             weekendStyle: const TextStyle(color: Color(0xFFFF6B6B), fontWeight: FontWeight.w600),
           ),
           eventLoader: (day) {
+            final today = DateTime.now();
             final dayStart = DateTime(day.year, day.month, day.day);
             return provider.activities.where((a) {
               final actDate = DateTime(a.startTime.year, a.startTime.month, a.startTime.day);
@@ -98,7 +99,12 @@ class CalendarScreen extends StatelessWidget {
               itemBuilder: (ctx, i) {
                 final a = provider.activitiesForSelectedDay[i];
                 return GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddActivityScreen(existing: a))),
+                  onTap: () async {
+                    await Navigator.push(context, MaterialPageRoute(builder: (_) => AddActivityScreen(existing: a)));
+                    if (context.mounted) {
+                      provider.selectDay(provider.selectedDay);
+                    }
+                  },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(12),
@@ -130,7 +136,12 @@ class CalendarScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF6C63FF),
         child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddActivityScreen())),
+        onPressed: () async {
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddActivityScreen()));
+          if (context.mounted) {
+            provider.selectDay(provider.selectedDay);
+          }
+        },
       ),
     );
   }
