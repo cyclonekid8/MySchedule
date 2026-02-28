@@ -8,8 +8,7 @@ const List<Category> freeCategories = [
 ];
 
 enum Category {
-  work, personal, healthFitness, social, errands,
-  prayer, tankMaintenance, crSupport, laundry, custom,
+  work, personal, healthFitness, social, errands, custom,
 }
 
 extension CategoryExtension on Category {
@@ -20,10 +19,6 @@ extension CategoryExtension on Category {
       case Category.healthFitness: return 'Health & Fitness';
       case Category.social: return 'Social';
       case Category.errands: return 'Errands';
-      case Category.prayer: return 'Prayer';
-      case Category.tankMaintenance: return 'Tank Maintenance';
-      case Category.crSupport: return 'CR Support';
-      case Category.laundry: return 'Laundry';
       case Category.custom: return 'Custom';
     }
   }
@@ -35,10 +30,6 @@ extension CategoryExtension on Category {
       case Category.healthFitness: return const Color(0xFF43E97B);
       case Category.social: return const Color(0xFFF7971E);
       case Category.errands: return const Color(0xFF4FACFE);
-      case Category.prayer: return const Color(0xFFF9CA24);
-      case Category.tankMaintenance: return const Color(0xFF00CEC9);
-      case Category.crSupport: return const Color(0xFFA29BFE);
-      case Category.laundry: return const Color(0xFFFD79A8);
       case Category.custom: return const Color(0xFF6C63FF);
     }
   }
@@ -50,10 +41,6 @@ extension CategoryExtension on Category {
       case Category.healthFitness: return '🏃';
       case Category.social: return '👥';
       case Category.errands: return '🛒';
-      case Category.prayer: return '🙏';
-      case Category.tankMaintenance: return '🐠';
-      case Category.crSupport: return '🤝';
-      case Category.laundry: return '👕';
       case Category.custom: return '⭐';
     }
   }
@@ -135,7 +122,7 @@ class Activity {
     'id': id, 'title': title,
     'startTime': startTime.toIso8601String(),
     'endTime': endTime.toIso8601String(),
-    'category': category.index,
+    'category': category.name,
     'customCategoryName': customCategoryName,
     'customCategoryColor': customCategoryColor.value,
     'repeat': repeat.index,
@@ -144,17 +131,43 @@ class Activity {
     'reminderMinutesBefore': reminderMinutesBefore,
   };
 
-  factory Activity.fromJson(Map<String, dynamic> json) => Activity(
-    id: json['id'], title: json['title'],
-    startTime: DateTime.parse(json['startTime']),
-    endTime: DateTime.parse(json['endTime']),
-    category: Category.values[json['category']],
-    customCategoryName: json['customCategoryName'] ?? '',
-    customCategoryColor: Color(json['customCategoryColor'] ?? 0xFF6C63FF),
-    repeat: RepeatType.values[json['repeat']],
-    hasCompletionTracking: json['hasCompletionTracking'] ?? false,
-    isDone: json['isDone'] ?? false,
-    hasReminder: json['hasReminder'] ?? false,
-    reminderMinutesBefore: json['reminderMinutesBefore'] ?? 15,
-  );
+  factory Activity.fromJson(Map<String, dynamic> json) {
+    // Support both old index-based and new name-based category format
+    Category category;
+    if (json['category'] is int) {
+      // Legacy: map old indices to new categories
+      const legacyMap = {
+        0: Category.work,
+        1: Category.personal,
+        2: Category.healthFitness,
+        3: Category.social,
+        4: Category.errands,
+        5: Category.custom, // prayer -> custom
+        6: Category.custom, // tankMaintenance -> custom
+        7: Category.custom, // crSupport -> custom
+        8: Category.custom, // laundry -> custom
+        9: Category.custom,
+      };
+      category = legacyMap[json['category']] ?? Category.custom;
+    } else {
+      category = Category.values.firstWhere(
+        (c) => c.name == json['category'],
+        orElse: () => Category.custom,
+      );
+    }
+
+    return Activity(
+      id: json['id'], title: json['title'],
+      startTime: DateTime.parse(json['startTime']),
+      endTime: DateTime.parse(json['endTime']),
+      category: category,
+      customCategoryName: json['customCategoryName'] ?? '',
+      customCategoryColor: Color(json['customCategoryColor'] ?? 0xFF6C63FF),
+      repeat: RepeatType.values[json['repeat']],
+      hasCompletionTracking: json['hasCompletionTracking'] ?? false,
+      isDone: json['isDone'] ?? false,
+      hasReminder: json['hasReminder'] ?? false,
+      reminderMinutesBefore: json['reminderMinutesBefore'] ?? 15,
+    );
+  }
 }
