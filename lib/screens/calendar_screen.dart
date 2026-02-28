@@ -13,9 +13,7 @@ class CalendarScreen extends StatelessWidget {
     const emojis = {
       Category.work: '💼', Category.personal: '🙋',
       Category.healthFitness: '🏃', Category.social: '👥',
-      Category.errands: '🛒', Category.prayer: '🙏',
-      Category.tankMaintenance: '🐠', Category.crSupport: '🤝',
-      Category.laundry: '👕', Category.custom: '⭐',
+      Category.errands: '🛒', Category.custom: '⭐',
     };
     return emojis[c] ?? '📌';
   }

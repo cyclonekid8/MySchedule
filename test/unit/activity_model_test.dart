@@ -10,24 +10,24 @@ void main() {
     setUp(() {
       activity = Activity(
         id: 'test-id',
-        title: 'Morning Prayer',
+        title: 'Morning Run',
         startTime: DateTime(2026, 2, 25, 9, 0),
         endTime: DateTime(2026, 2, 25, 10, 0),
-        category: Category.prayer,
+        category: Category.healthFitness,
       );
     });
 
     test('creates activity with correct fields', () {
       expect(activity.id, 'test-id');
-      expect(activity.title, 'Morning Prayer');
-      expect(activity.category, Category.prayer);
+      expect(activity.title, 'Morning Run');
+      expect(activity.category, Category.healthFitness);
       expect(activity.repeat, RepeatType.none);
       expect(activity.isDone, false);
       expect(activity.hasReminder, false);
     });
 
     test('displayCategory returns correct label for standard category', () {
-      expect(activity.displayCategory, 'Prayer');
+      expect(activity.displayCategory, 'Health & Fitness');
     });
 
     test('displayCategory returns custom name for custom category', () {
@@ -39,7 +39,7 @@ void main() {
     });
 
     test('displayColor returns correct color for standard category', () {
-      expect(activity.displayColor, const Color(0xFFF9CA24));
+      expect(activity.displayColor, const Color(0xFF43E97B));
     });
 
     test('displayColor returns custom color for custom category', () {
@@ -52,10 +52,10 @@ void main() {
 
     test('copyWith updates fields correctly', () {
       final updated = activity.copyWith(
-        title: 'Evening Prayer',
+        title: 'Evening Run',
         isDone: true,
       );
-      expect(updated.title, 'Evening Prayer');
+      expect(updated.title, 'Evening Run');
       expect(updated.isDone, true);
       expect(updated.id, activity.id); // id unchanged
       expect(updated.category, activity.category); // category unchanged
@@ -101,7 +101,6 @@ void main() {
       expect(freeCategories, contains(Category.work));
       expect(freeCategories, contains(Category.personal));
       expect(freeCategories, contains(Category.healthFitness));
-      expect(freeCategories, isNot(contains(Category.prayer)));
       expect(freeCategories, isNot(contains(Category.social)));
     });
 
@@ -112,9 +111,9 @@ void main() {
     });
 
     test('isFree returns false for premium categories', () {
-      expect(Category.prayer.isFree, false);
       expect(Category.social.isFree, false);
-      expect(Category.tankMaintenance.isFree, false);
+      expect(Category.errands.isFree, false);
+      expect(Category.custom.isFree, false);
     });
   });
 
