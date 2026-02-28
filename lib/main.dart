@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/schedule_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'services/notification_service.dart';
 import 'services/purchase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
-
   debugPrint('🚀 App starting...');
-
   try {
     debugPrint('🔔 Initializing notifications...');
     await NotificationService().init().timeout(
@@ -25,24 +24,24 @@ void main() async {
     );
     debugPrint('✅ Notifications initialized');
   } catch (e) { debugPrint('❌ Notification error: $e'); }
-
   final purchaseService = PurchaseService();
   debugPrint('💰 Initializing purchase service...');
   try { await purchaseService.init(); } catch (e) { debugPrint('❌ Purchase error: $e'); }
   debugPrint('✅ Purchase service initialized');
-
   final scheduleProvider = ScheduleProvider();
   debugPrint('📅 Loading schedule...');
   try { await scheduleProvider.load(); } catch (e) { debugPrint('❌ Schedule error: $e'); }
   debugPrint('✅ Schedule loaded');
-
   final themeProvider = ThemeProvider();
   debugPrint('🎨 Initializing theme...');
   try { await themeProvider.init(); } catch (e) { debugPrint('❌ Theme error: $e'); }
   debugPrint('✅ Theme initialized');
 
-  debugPrint('🏁 Running app...');
+  // Check if onboarding is complete
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
 
+  debugPrint('🏁 Running app...');
   runApp(
     MultiProvider(
       providers: [
@@ -50,13 +49,14 @@ void main() async {
         ChangeNotifierProvider.value(value: themeProvider),
         ChangeNotifierProvider.value(value: purchaseService),
       ],
-      child: const MyScheduleApp(),
+      child: MyScheduleApp(showOnboarding: !onboardingComplete),
     ),
   );
 }
 
 class MyScheduleApp extends StatelessWidget {
-  const MyScheduleApp({super.key});
+  final bool showOnboarding;
+  const MyScheduleApp({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +93,7 @@ class MyScheduleApp extends StatelessWidget {
         fontFamily: 'Roboto',
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: showOnboarding ? const OnboardingScreen() : const HomeScreen(),
     );
   }
 }
