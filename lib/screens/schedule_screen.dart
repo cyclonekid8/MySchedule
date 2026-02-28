@@ -8,10 +8,20 @@ import 'add_activity_screen.dart';
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
 
+  bool _isPastDay(DateTime selected) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final sel = DateTime(selected.year, selected.month, selected.day);
+    return sel.isBefore(today);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? const Color(0xFF0A0A0F) : Colors.white;
+    final selected = context.watch<ScheduleProvider>().selectedDay;
+    final isPast = _isPastDay(selected);
+
     return Scaffold(
       backgroundColor: bg,
       body: SafeArea(
@@ -25,9 +35,12 @@ class ScheduleScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF6C63FF),
+        backgroundColor: isPast ? Colors.grey : const Color(0xFF6C63FF),
         child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddActivityScreen())),
+        onPressed: isPast
+          ? () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Cannot add activities to past dates')))
+          : () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddActivityScreen())),
       ),
     );
   }
@@ -64,62 +77,120 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _WeekStrip extends StatelessWidget {
+class _WeekStrip extends StatefulWidget {
+  @override
+  State<_WeekStrip> createState() => _WeekStripState();
+}
+
+class _WeekStripState extends State<_WeekStrip> {
+  late PageController _pageController;
+  static const int _totalWeeks = 104; // 52 past + 52 future
+  static const int _centerPage = 52;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _centerPage);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  DateTime _getMondayOfCurrentWeek() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final unselectedBg = isDark ? const Color(0xFF18181F) : const Color(0xFFF0F0F5);
     final unselectedText = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF888888);
+    final pastDayColor = isDark ? const Color(0xFF555555) : const Color(0xFFBBBBBB);
     final provider = context.watch<ScheduleProvider>();
     final selected = provider.selectedDay;
-    final monday = selected.subtract(Duration(days: selected.weekday - 1));
-    final days = List.generate(7, (i) => monday.add(Duration(days: i)));
+    final today = DateTime.now();
+    final currentMonday = _getMondayOfCurrentWeek();
 
     return Container(
       height: 78,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        children: days.map((day) {
-          final isSelected = day.year == selected.year && day.month == selected.month && day.day == selected.day;
-          final hasEvents = provider.activities.any((a) {
-            return a.startTime.year == day.year && a.startTime.month == day.month && a.startTime.day == day.day;
-          });
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => provider.selectDay(day),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF6C63FF) : unselectedBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(DateFormat('E').format(day).substring(0, 2),
-                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white70 : unselectedText)),
-                    const SizedBox(height: 2),
-                    Text('${day.day}',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
-                        color: isSelected ? Colors.white : (isDark ? Colors.white : const Color(0xFF1A1A2E)))),
-                    const SizedBox(height: 3),
-                    Container(
-                      width: 4, height: 4,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: _totalWeeks,
+        itemBuilder: (context, pageIndex) {
+          final weekOffset = pageIndex - _centerPage;
+          final monday = currentMonday.add(Duration(days: weekOffset * 7));
+          final days = List.generate(7, (i) => monday.add(Duration(days: i)));
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: days.map((day) {
+                final isSelected = day.year == selected.year && day.month == selected.month && day.day == selected.day;
+                final isToday = day.year == today.year && day.month == today.month && day.day == today.day;
+                final isPast = DateTime(day.year, day.month, day.day).isBefore(DateTime(today.year, today.month, today.day));
+                final hasEvents = provider.activities.any((a) {
+                  final sameDay = a.startTime.year == day.year && a.startTime.month == day.month && a.startTime.day == day.day;
+                  if (sameDay) return true;
+                  final actDate = DateTime(a.startTime.year, a.startTime.month, a.startTime.day);
+                  final dayStart = DateTime(day.year, day.month, day.day);
+                  if (dayStart.isBefore(actDate)) return false;
+                  if (a.repeat == RepeatType.daily) return true;
+                  if (a.repeat == RepeatType.weekly && a.startTime.weekday == day.weekday) return true;
+                  if (a.repeat == RepeatType.monthly && a.startTime.day == day.day) return true;
+                  return false;
+                });
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => provider.selectDay(day),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: hasEvents
-                          ? (isSelected ? Colors.white54 : const Color(0xFF43E97B))
-                          : Colors.transparent,
+                        color: isSelected
+                          ? const Color(0xFF6C63FF)
+                          : isToday
+                            ? const Color(0xFF6C63FF).withOpacity(0.15)
+                            : unselectedBg,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(DateFormat('E').format(day).substring(0, 2),
+                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600,
+                              color: isSelected ? Colors.white70 : (isPast ? pastDayColor : unselectedText))),
+                          const SizedBox(height: 2),
+                          Text('${day.day}',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
+                              color: isSelected
+                                ? Colors.white
+                                : isPast
+                                  ? pastDayColor
+                                  : (isDark ? Colors.white : const Color(0xFF1A1A2E)))),
+                          const SizedBox(height: 3),
+                          Container(
+                            width: 4, height: 4,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: hasEvents
+                                ? (isSelected ? Colors.white54 : const Color(0xFF43E97B))
+                                : Colors.transparent,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              }).toList(),
             ),
           );
-        }).toList(),
+        },
       ),
     );
   }
@@ -171,7 +242,7 @@ class _TimeGridState extends State<_TimeGrid> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF888888);
+    final subColor = isDark ? const Color(0xFFCCCCCC) : const Color(0xFF555566);
     final dividerColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
     final activities = context.watch<ScheduleProvider>().activitiesForSelectedDay;
     final hours = List.generate(24, (i) => i);
@@ -191,7 +262,7 @@ class _TimeGridState extends State<_TimeGrid> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text('${hour.toString().padLeft(2, '0')}:00',
-                  style: TextStyle(fontSize: 10, color: subColor, fontFamily: 'monospace')),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: subColor, fontFamily: 'monospace')),
               ),
             ),
             Expanded(
@@ -220,7 +291,7 @@ class _ActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
-    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
+    final subColor = isDark ? const Color(0xFFCCCCCC) : const Color(0xFF555566);
     final borderColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
     final provider = context.read<ScheduleProvider>();
     final color = activity.category.color;
@@ -269,7 +340,7 @@ class _ActivityCard extends StatelessWidget {
                         )),
                       const SizedBox(height: 2),
                       Text('${DateFormat('HH:mm').format(activity.startTime)} – ${DateFormat('HH:mm').format(activity.endTime)}',
-                        style: TextStyle(fontSize: 10, color: subColor, fontFamily: 'monospace')),
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: subColor, fontFamily: 'monospace')),
                       const SizedBox(height: 3),
                       Row(
                         children: [

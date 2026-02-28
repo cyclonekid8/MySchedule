@@ -65,8 +65,21 @@ class CalendarScreen extends StatelessWidget {
             weekdayStyle: TextStyle(color: subColor, fontWeight: FontWeight.w600),
             weekendStyle: const TextStyle(color: Color(0xFFFF6B6B), fontWeight: FontWeight.w600),
           ),
-          eventLoader: (day) => provider.activities.where((a) =>
-            a.startTime.year == day.year && a.startTime.month == day.month && a.startTime.day == day.day).toList(),
+          eventLoader: (day) {
+            final today = DateTime.now();
+            final dayStart = DateTime(day.year, day.month, day.day);
+            return provider.activities.where((a) {
+              final actDate = DateTime(a.startTime.year, a.startTime.month, a.startTime.day);
+              // Exact date match
+              if (actDate == dayStart) return true;
+              // Recurring: only show on/after the activity start date
+              if (dayStart.isBefore(actDate)) return false;
+              if (a.repeat == RepeatType.daily) return true;
+              if (a.repeat == RepeatType.weekly && a.startTime.weekday == day.weekday) return true;
+              if (a.repeat == RepeatType.monthly && a.startTime.day == day.day) return true;
+              return false;
+            }).toList();
+          },
         ),
         Divider(color: dividerColor),
         Padding(
@@ -101,7 +114,7 @@ class CalendarScreen extends StatelessWidget {
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(a.title, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
                         Text('${DateFormat('HH:mm').format(a.startTime)} – ${DateFormat('HH:mm').format(a.endTime)}',
-                          style: TextStyle(color: subColor, fontSize: 11, fontFamily: 'monospace')),
+                          style: TextStyle(color: isDark ? const Color(0xFFCCCCCC) : const Color(0xFF555566), fontSize: 11, fontWeight: FontWeight.w500, fontFamily: 'monospace')),
                       ])),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
