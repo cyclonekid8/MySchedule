@@ -44,8 +44,10 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
       _customCategoryName = e.customCategoryName;
       _customCategoryColor = e.customCategoryColor;
     } else {
-      _startTime = DateTime(now.year, now.month, now.day, now.hour + 1, 0);
-      _endTime = DateTime(now.year, now.month, now.day, now.hour + 2, 0);
+      // Use selected day from provider for the date portion
+      final selected = context.read<ScheduleProvider>().selectedDay;
+      _startTime = DateTime(selected.year, selected.month, selected.day, now.hour + 1, 0);
+      _endTime = DateTime(selected.year, selected.month, selected.day, now.hour + 2, 0);
     }
   }
 
@@ -271,6 +273,17 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('End time must be after start time')));
       return;
+    }
+    // Prevent adding new activities to past dates
+    if (widget.existing == null) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final activityDate = DateTime(_startTime.year, _startTime.month, _startTime.day);
+      if (activityDate.isBefore(today)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cannot add activities to past dates')));
+        return;
+      }
     }
     final provider = context.read<ScheduleProvider>();
     final purchase = context.read<PurchaseService>();
