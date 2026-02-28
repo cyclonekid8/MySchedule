@@ -171,7 +171,7 @@ class _TimeGridState extends State<_TimeGrid> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF888888);
+    final subColor = isDark ? const Color(0xFFCCCCCC) : const Color(0xFF555566);
     final dividerColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
     final activities = context.watch<ScheduleProvider>().activitiesForSelectedDay;
     final hours = List.generate(24, (i) => i);
@@ -191,7 +191,7 @@ class _TimeGridState extends State<_TimeGrid> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text('${hour.toString().padLeft(2, '0')}:00',
-                  style: TextStyle(fontSize: 10, color: subColor, fontFamily: 'monospace')),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: subColor, fontFamily: 'monospace')),
               ),
             ),
             Expanded(
@@ -220,7 +220,7 @@ class _ActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
-    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
+    final subColor = isDark ? const Color(0xFFCCCCCC) : const Color(0xFF555566);
     final borderColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
     final provider = context.read<ScheduleProvider>();
     final color = activity.category.color;
@@ -269,7 +269,7 @@ class _ActivityCard extends StatelessWidget {
                         )),
                       const SizedBox(height: 2),
                       Text('${DateFormat('HH:mm').format(activity.startTime)} – ${DateFormat('HH:mm').format(activity.endTime)}',
-                        style: TextStyle(fontSize: 10, color: subColor, fontFamily: 'monospace')),
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: subColor, fontFamily: 'monospace')),
                       const SizedBox(height: 3),
                       Row(
                         children: [

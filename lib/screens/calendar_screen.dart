@@ -101,7 +101,7 @@ class CalendarScreen extends StatelessWidget {
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(a.title, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
                         Text('${DateFormat('HH:mm').format(a.startTime)} – ${DateFormat('HH:mm').format(a.endTime)}',
-                          style: TextStyle(color: subColor, fontSize: 11, fontFamily: 'monospace')),
+                          style: TextStyle(color: isDark ? const Color(0xFFCCCCCC) : const Color(0xFF555566), fontSize: 11, fontWeight: FontWeight.w500, fontFamily: 'monospace')),
                       ])),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
