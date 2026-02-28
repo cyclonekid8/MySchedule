@@ -40,7 +40,12 @@ class ScheduleScreen extends StatelessWidget {
         onPressed: isPast
           ? () => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Cannot add activities to past dates')))
-          : () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddActivityScreen())),
+          : () async {
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddActivityScreen()));
+              if (context.mounted) {
+                context.read<ScheduleProvider>().selectDay(context.read<ScheduleProvider>().selectedDay);
+              }
+            },
       ),
     );
   }
@@ -382,9 +387,12 @@ class _ActivityCard extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.edit, color: Color(0xFF6C63FF)),
               title: Text('Edit', style: TextStyle(color: textColor)),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => AddActivityScreen(existing: activity)));
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => AddActivityScreen(existing: activity)));
+                if (context.mounted) {
+                  context.read<ScheduleProvider>().selectDay(context.read<ScheduleProvider>().selectedDay);
+                }
               },
             ),
             ListTile(
