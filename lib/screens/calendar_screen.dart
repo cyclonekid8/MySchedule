@@ -65,8 +65,21 @@ class CalendarScreen extends StatelessWidget {
             weekdayStyle: TextStyle(color: subColor, fontWeight: FontWeight.w600),
             weekendStyle: const TextStyle(color: Color(0xFFFF6B6B), fontWeight: FontWeight.w600),
           ),
-          eventLoader: (day) => provider.activities.where((a) =>
-            a.startTime.year == day.year && a.startTime.month == day.month && a.startTime.day == day.day).toList(),
+          eventLoader: (day) {
+            final today = DateTime.now();
+            final dayStart = DateTime(day.year, day.month, day.day);
+            return provider.activities.where((a) {
+              final actDate = DateTime(a.startTime.year, a.startTime.month, a.startTime.day);
+              // Exact date match
+              if (actDate == dayStart) return true;
+              // Recurring: only show on/after the activity start date
+              if (dayStart.isBefore(actDate)) return false;
+              if (a.repeat == RepeatType.daily) return true;
+              if (a.repeat == RepeatType.weekly && a.startTime.weekday == day.weekday) return true;
+              if (a.repeat == RepeatType.monthly && a.startTime.day == day.day) return true;
+              return false;
+            }).toList();
+          },
         ),
         Divider(color: dividerColor),
         Padding(
