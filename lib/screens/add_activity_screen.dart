@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/activity.dart';
 import '../providers/schedule_provider.dart';
+import '../services/notification_service.dart';
 import '../services/purchase_service.dart';
 import 'paywall_screen.dart';
 
@@ -527,7 +528,17 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
             label: 'Reminder notification',
             subtitle: 'Notify me before this activity',
             value: _hasReminder,
-            onChanged: (v) => setState(() => _hasReminder = v),
+            onChanged: (v) async {
+              if (v) {
+                // Check exact alarm permission when enabling reminders
+                final granted = await NotificationService().ensureExactAlarmPermission(context);
+                if (!granted && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Reminders may not be precise without alarm permission')));
+                }
+              }
+              setState(() => _hasReminder = v);
+            },
           ),
           if (_hasReminder) ...[
             const SizedBox(height: 12),
@@ -649,7 +660,7 @@ class _ToggleRow extends StatelessWidget {
   final String label;
   final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final Function(bool) onChanged;
   const _ToggleRow({required this.icon, required this.label, required this.subtitle, required this.value, required this.onChanged});
 
   @override
