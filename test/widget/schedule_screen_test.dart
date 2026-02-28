@@ -63,7 +63,11 @@ void main() {
       ));
       await tester.pumpWidget(buildTestApp(const ScheduleScreen(), scheduleProvider: provider));
       await tester.pump();
-      await tester.scrollUntilVisible(find.text('Morning Workout'), 100);
+      await tester.scrollUntilVisible(
+        find.text('Morning Workout'),
+        100,
+        scrollable: find.byType(Scrollable).last,
+      );
       expect(find.text('Morning Workout'), findsOneWidget);
     });
   });
