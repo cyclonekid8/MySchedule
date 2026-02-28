@@ -8,7 +8,7 @@ on:
       - main
   pull_request:
     branches:
-      - main
+      - premium-features-testing
 
 jobs:
   # ── Job 1: Unit & Widget Tests ─────────────────────────────────────
