@@ -100,6 +100,11 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
         const SnackBar(content: Text('Please enter an activity name')));
       return;
     }
+    if (!_endTime.isAfter(_startTime)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('End time must be after start time')));
+      return;
+    }
     final provider = context.read<ScheduleProvider>();
     final purchase = context.read<PurchaseService>();
 
