@@ -125,7 +125,49 @@ class _WeekStrip extends StatelessWidget {
   }
 }
 
-class _TimeGrid extends StatelessWidget {
+class _TimeGrid extends StatefulWidget {
+  @override
+  State<_TimeGrid> createState() => _TimeGridState();
+}
+
+class _TimeGridState extends State<_TimeGrid> {
+  final ScrollController _scrollController = ScrollController();
+  static const double _hourHeight = 54.0; // 48 content + ~6 padding/divider
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCurrentTime();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToCurrentTime() {
+    final now = DateTime.now();
+    final selected = context.read<ScheduleProvider>().selectedDay;
+    final isToday = now.year == selected.year &&
+        now.month == selected.month &&
+        now.day == selected.day;
+
+    if (isToday && _scrollController.hasClients) {
+      // Scroll to current hour, offset by 2 hours earlier for context
+      final targetHour = (now.hour - 2).clamp(0, 23);
+      final offset = targetHour * _hourHeight;
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      _scrollController.animateTo(
+        offset.clamp(0.0, maxScroll),
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -135,6 +177,7 @@ class _TimeGrid extends StatelessWidget {
     final hours = List.generate(24, (i) => i);
 
     return ListView.builder(
+      controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: hours.length,
       itemBuilder: (context, index) {

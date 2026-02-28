@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/theme_provider.dart';
 import '../services/purchase_service.dart';
 import 'paywall_screen.dart';
+import 'about_your_data_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -247,6 +248,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             const SizedBox(height: 24),
             _SectionHeader('Data', subColor),
+            const SizedBox(height: 10),
+
+            GestureDetector(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutYourDataScreen())),
+              child: _SettingsTile(
+                icon: Icons.shield_outlined,
+                label: 'About Your Data',
+                subtitle: 'How we handle your privacy',
+                surface: surface, border: border, textColor: textColor, subColor: subColor,
+                trailing: Icon(Icons.chevron_right, color: subColor),
+              ),
+            ),
             const SizedBox(height: 10),
 
             GestureDetector(

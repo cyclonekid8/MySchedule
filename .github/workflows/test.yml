@@ -6,9 +6,6 @@ on:
       - premium-features-testing
       - premium-features-sharpen
       - main
-  pull_request:
-    branches:
-      - premium-features-testing
 
 jobs:
   # ── Job 1: Unit & Widget Tests ─────────────────────────────────────
