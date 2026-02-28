@@ -66,7 +66,6 @@ class CalendarScreen extends StatelessWidget {
             weekendStyle: const TextStyle(color: Color(0xFFFF6B6B), fontWeight: FontWeight.w600),
           ),
           eventLoader: (day) {
-            final today = DateTime.now();
             final dayStart = DateTime(day.year, day.month, day.day);
             return provider.activities.where((a) {
               final actDate = DateTime(a.startTime.year, a.startTime.month, a.startTime.day);
