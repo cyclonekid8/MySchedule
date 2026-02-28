@@ -23,6 +23,9 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
   bool _hasCompletion = false;
   bool _hasReminder = false;
   int _reminderMins = 15;
+  String _customCategoryName = '';
+  Color _customCategoryColor = const Color(0xFF6C63FF);
+  String? _selectedCustomCategoryId;
 
   @override
   void initState() {
@@ -38,6 +41,8 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
       _hasCompletion = e.hasCompletionTracking;
       _hasReminder = e.hasReminder;
       _reminderMins = e.reminderMinutesBefore;
+      _customCategoryName = e.customCategoryName;
+      _customCategoryColor = e.customCategoryColor;
     } else {
       _startTime = DateTime(now.year, now.month, now.day, now.hour + 1, 0);
       _endTime = DateTime(now.year, now.month, now.day, now.hour + 2, 0);
@@ -94,6 +99,168 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
     }
   }
 
+  void _showCreateCustomCategoryDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sheetBg = isDark ? const Color(0xFF18181F) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
+    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
+    final surface = isDark ? const Color(0xFF16161E) : const Color(0xFFF0F0F5);
+    final borderColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
+
+    final nameController = TextEditingController();
+    Color selectedColor = const Color(0xFF6C63FF);
+    String selectedEmoji = '⭐';
+
+    const colorOptions = [
+      Color(0xFF6C63FF), Color(0xFFFF6B6B), Color(0xFF43E97B),
+      Color(0xFFF7971E), Color(0xFF4FACFE), Color(0xFFF9CA24),
+      Color(0xFF00CEC9), Color(0xFFA29BFE), Color(0xFFFD79A8),
+      Color(0xFFE17055), Color(0xFF00B894), Color(0xFF0984E3),
+    ];
+
+    const emojiOptions = ['⭐', '🎯', '📚', '🎨', '🎵', '🏠', '✈️', '🍳', '💪', '🧘', '🙏', '💡', '🎮', '🛒', '👕', '🐠'];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: sheetBg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Create Custom Tag', style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 16),
+
+              // Name
+              TextField(
+                controller: nameController,
+                style: TextStyle(color: textColor),
+                decoration: InputDecoration(
+                  hintText: 'Tag name (e.g. Reading)',
+                  hintStyle: TextStyle(color: subColor),
+                  filled: true, fillColor: surface,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: borderColor)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF6C63FF))),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Emoji picker
+              Text('ICON', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: subColor, letterSpacing: 0.8)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8, runSpacing: 8,
+                children: emojiOptions.map((emoji) {
+                  final sel = selectedEmoji == emoji;
+                  return GestureDetector(
+                    onTap: () => setSheetState(() => selectedEmoji = emoji),
+                    child: Container(
+                      width: 40, height: 40,
+                      decoration: BoxDecoration(
+                        color: sel ? const Color(0xFF6C63FF).withOpacity(0.2) : surface,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: sel ? const Color(0xFF6C63FF) : borderColor),
+                      ),
+                      child: Center(child: Text(emoji, style: const TextStyle(fontSize: 18))),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+
+              // Color picker
+              Text('COLOR', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: subColor, letterSpacing: 0.8)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8, runSpacing: 8,
+                children: colorOptions.map((color) {
+                  final sel = selectedColor == color;
+                  return GestureDetector(
+                    onTap: () => setSheetState(() => selectedColor = color),
+                    child: Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: sel ? Colors.white : Colors.transparent, width: 3),
+                        boxShadow: sel ? [BoxShadow(color: color.withOpacity(0.5), blurRadius: 8)] : null,
+                      ),
+                      child: sel ? const Icon(Icons.check, color: Colors.white, size: 18) : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+
+              // Preview + Save
+              Row(
+                children: [
+                  // Preview
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: selectedColor.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: selectedColor.withOpacity(0.4)),
+                      ),
+                      child: Text(
+                        '$selectedEmoji ${nameController.text.isEmpty ? 'Preview' : nameController.text}',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: selectedColor),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Save button
+                  GestureDetector(
+                    onTap: () {
+                      if (nameController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please enter a tag name')));
+                        return;
+                      }
+                      final provider = context.read<ScheduleProvider>();
+                      final newCat = CustomCategory(
+                        id: provider.generateId(),
+                        name: nameController.text.trim(),
+                        color: selectedColor,
+                        emoji: selectedEmoji,
+                      );
+                      provider.addCustomCategory(newCat);
+                      setState(() {
+                        _category = Category.custom;
+                        _customCategoryName = newCat.name;
+                        _customCategoryColor = newCat.color;
+                        _selectedCustomCategoryId = newCat.id;
+                      });
+                      Navigator.pop(ctx);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFF6C63FF), Color(0xFF8B83FF)]),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text('Create', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _save() {
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -127,6 +294,8 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
         title: _titleController.text.trim(),
         startTime: _startTime, endTime: _endTime,
         category: _category, repeat: _repeat,
+        customCategoryName: _customCategoryName,
+        customCategoryColor: _customCategoryColor,
         hasCompletionTracking: _hasCompletion,
         hasReminder: _hasReminder,
         reminderMinutesBefore: _reminderMins,
@@ -137,6 +306,8 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
         title: _titleController.text.trim(),
         startTime: _startTime, endTime: _endTime,
         category: _category, repeat: _repeat,
+        customCategoryName: _customCategoryName,
+        customCategoryColor: _customCategoryColor,
         hasCompletionTracking: _hasCompletion,
         hasReminder: _hasReminder,
         reminderMinutesBefore: _reminderMins,
@@ -153,6 +324,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
     final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
     final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
     final borderColor = isDark ? const Color(0xFF3A3A4A) : const Color(0xFFE0E0E0);
+    final customCategories = context.watch<ScheduleProvider>().customCategories;
 
     return Scaffold(
       backgroundColor: bg,
@@ -228,24 +400,77 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
           const SizedBox(height: 10),
           Wrap(
             spacing: 8, runSpacing: 8,
-            children: Category.values.map((cat) {
-              final selected = _category == cat;
-              return GestureDetector(
-                onTap: () => setState(() => _category = cat),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
+            children: [
+              // Built-in categories (exclude 'custom' from enum)
+              ...Category.values.where((c) => c != Category.custom).map((cat) {
+                final selected = _category == cat;
+                return GestureDetector(
+                  onTap: () => setState(() {
+                    _category = cat;
+                    _selectedCustomCategoryId = null;
+                    _customCategoryName = '';
+                    _customCategoryColor = const Color(0xFF6C63FF);
+                  }),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: selected ? cat.color : cat.color.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cat.color.withOpacity(0.4)),
+                    ),
+                    child: Text('${cat.emoji} ${cat.label}',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                        color: selected ? Colors.white : cat.color)),
+                  ),
+                );
+              }),
+              // User's custom categories
+              ...customCategories.map((cc) {
+                final selected = _category == Category.custom && _selectedCustomCategoryId == cc.id;
+                return GestureDetector(
+                  onTap: () => setState(() {
+                    _category = Category.custom;
+                    _selectedCustomCategoryId = cc.id;
+                    _customCategoryName = cc.name;
+                    _customCategoryColor = cc.color;
+                  }),
+                  onLongPress: () => _showDeleteCustomCategoryDialog(cc),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: selected ? cc.color : cc.color.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cc.color.withOpacity(0.4)),
+                    ),
+                    child: Text('${cc.emoji} ${cc.name}',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                        color: selected ? Colors.white : cc.color)),
+                  ),
+                );
+              }),
+              // Add custom tag button
+              GestureDetector(
+                onTap: _showCreateCustomCategoryDialog,
+                child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
-                    color: selected ? cat.color : cat.color.withOpacity(0.12),
+                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: cat.color.withOpacity(0.4)),
+                    border: Border.all(color: borderColor, style: BorderStyle.solid),
                   ),
-                  child: Text('${cat.emoji} ${cat.label}',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                      color: selected ? Colors.white : cat.color)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add, size: 14, color: subColor),
+                      const SizedBox(width: 4),
+                      Text('New Tag', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: subColor)),
+                    ],
+                  ),
                 ),
-              );
-            }).toList(),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
 
@@ -332,6 +557,43 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
             ),
           ),
           SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteCustomCategoryDialog(CustomCategory cc) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1A2E);
+    final subColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF666688);
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete "${cc.name}"?', style: TextStyle(color: textColor, fontWeight: FontWeight.w700)),
+        content: Text('This will remove the custom tag. Activities using it will keep their color but show as Custom.',
+          style: TextStyle(color: subColor, height: 1.5)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: TextStyle(color: subColor)),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<ScheduleProvider>().removeCustomCategory(cc.id);
+              if (_selectedCustomCategoryId == cc.id) {
+                setState(() {
+                  _category = Category.work;
+                  _selectedCustomCategoryId = null;
+                  _customCategoryName = '';
+                  _customCategoryColor = const Color(0xFF6C63FF);
+                });
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: Color(0xFFFF6B6B), fontWeight: FontWeight.w700)),
+          ),
         ],
       ),
     );
