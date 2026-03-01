@@ -28,6 +28,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // Set up snackbar feedback for notification service after frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ScheduleProvider>().setContext(context);
+      // Re-initialize notifications now that feedback is set up
+      NotificationService().init();
     });
   }
 
