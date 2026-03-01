@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import '../models/activity.dart';
@@ -11,14 +12,24 @@ class NotificationService {
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  Function(String)? _onUserFeedback;
+
+  void setUserFeedbackCallback(Function(String) callback) {
+    _onUserFeedback = callback;
+  }
+
+  void _showFeedback(String message) {
+    _onUserFeedback?.call(message);
+  }
 
   Future<void> init() async {
     tz.initializeTimeZones();
     try {
       final timeZoneName = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(timeZoneName));
+      _showFeedback('Timezone set to: ${tz.local.name}');
     } catch (e) {
-      debugPrint('⚠️ Could not set local timezone: $e');
+      _showFeedback('Could not set local timezone: $e');
     }
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android);
@@ -29,6 +40,22 @@ class NotificationService {
     await _plugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
+    
+    // Create notification channel explicitly
+    await _createNotificationChannel();
+  }
+
+  Future<void> _createNotificationChannel() async {
+    const channel = AndroidNotificationChannel(
+      'activity_reminders',
+      'Activity Reminders',
+      description: 'Reminders for scheduled activities',
+      importance: Importance.high,
+    );
+    
+    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    await android?.createNotificationChannel(channel);
+    _showFeedback('Notification channel created');
   }
 
   /// Check if exact alarms are permitted (Android 12+)
@@ -99,9 +126,13 @@ class NotificationService {
     final reminderTime = activity.startTime.subtract(
       Duration(minutes: activity.reminderMinutesBefore),
     );
-    if (reminderTime.isBefore(DateTime.now())) return;
+    if (reminderTime.isBefore(DateTime.now())) {
+      _showFeedback('Skipping reminder for ${activity.title} - time is in the past');
+      return;
+    }
 
     final tzReminderTime = tz.TZDateTime.from(reminderTime, tz.local);
+    _showFeedback('Scheduling reminder for ${activity.title} at ${DateFormat('HH:mm').format(reminderTime)}');
 
     const androidDetails = AndroidNotificationDetails(
       'activity_reminders',
@@ -129,6 +160,7 @@ class NotificationService {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );
+    _showFeedback('Notification scheduled (${canExact ? 'exact' : 'inexact'})');
   }
 
   Future<void> cancelActivityReminder(String activityId) async {
