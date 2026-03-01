@@ -27,39 +27,61 @@ class NotificationService {
   Future<void> init() async {
     try {
       _showFeedback("Initializing flutter_local_notifications...");
-      
+
       // Initialize timezone
       tz.initializeTimeZones();
       final timeZoneName = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(timeZoneName));
-      
+
       // Initialize plugin
       const android = AndroidInitializationSettings('@mipmap/ic_launcher');
       const settings = InitializationSettings(android: android);
       await _plugin.initialize(settings, onDidReceiveNotificationResponse: (details) {});
-      
+
       // Request Android 13+ notification permission
       _showFeedback("Requesting notification permission...");
       final androidImpl = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       if (androidImpl != null) {
         final granted = await androidImpl.requestNotificationsPermission();
         _showFeedback(granted == true ? "Permission granted" : "Permission denied");
-        
+
         // Create notification channel
         _showFeedback("Creating notification channel...");
         await androidImpl.createNotificationChannel(
           const AndroidNotificationChannel(
             'activity_reminders',
-            'Activity Reminders', 
+            'Activity Reminders',
             description: 'Reminders for scheduled activities',
             importance: Importance.high,
           ),
         );
         _showFeedback("Notification channel created successfully");
+        
+        // Check and request exact alarm permission
+        await _checkExactAlarmPermission();
       }
-      
+
     } catch (e) {
       _showFeedback("Initialization failed: $e");
+    }
+  }
+
+  Future<void> _checkExactAlarmPermission() async {
+    final androidImpl = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    if (androidImpl != null) {
+      final canSchedule = await androidImpl.canScheduleExactNotifications() ?? false;
+      
+      if (!canSchedule) {
+        _showFeedback("Requesting exact alarm permission...");
+        try {
+          await androidImpl.requestExactAlarmsPermission();
+          _showFeedback("Exact alarm permission requested");
+        } catch (e) {
+          _showFeedback("Failed to request exact alarm permission: $e");
+        }
+      } else {
+        _showFeedback("Exact alarm permission already granted");
+      }
     }
   }
 
@@ -67,6 +89,12 @@ class NotificationService {
     if (!activity.hasReminder) return;
 
     try {
+      // Check exact alarm permission before scheduling
+      final hasExactPermission = await ensureExactAlarmPermission();
+      if (!hasExactPermission) {
+        _showFeedback('Exact alarm permission denied - reminders may not be precise');
+      }
+
       final reminderTime = activity.startTime.subtract(Duration(minutes: activity.reminderMinutesBefore));
       if (reminderTime.isBefore(DateTime.now())) {
         _showFeedback('Reminder time in past - skipping');
@@ -96,7 +124,7 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
-      
+
       _showFeedback('Scheduled successfully (ID: $notifId)');
     } catch (e) {
       _showFeedback('Scheduling failed: $e');
@@ -112,10 +140,23 @@ class NotificationService {
     await _plugin.cancelAll();
   }
 
-  Future<bool> ensureExactAlarmPermission(BuildContext context) async {
+  Future<bool> ensureExactAlarmPermission() async {
     final androidImpl = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     if (androidImpl != null) {
-      return await androidImpl.canScheduleExactNotifications() ?? false;
+      final canSchedule = await androidImpl.canScheduleExactNotifications() ?? false;
+      
+      if (!canSchedule) {
+        try {
+          await androidImpl.requestExactAlarmsPermission();
+          // Check again after request
+          return await androidImpl.canScheduleExactNotifications() ?? false;
+        } catch (e) {
+          _showFeedback("Failed to request exact alarm permission: $e");
+          return false;
+        }
+      }
+      
+      return canSchedule;
     }
     return false;
   }
