@@ -24,6 +24,32 @@ class NotificationService {
     }
   }
 
+  DateTimeComponents? _getRepeatComponent(RepeatType repeat) {
+    switch (repeat) {
+      case RepeatType.daily:
+        return DateTimeComponents.time;
+      case RepeatType.weekly:
+        return DateTimeComponents.dayOfWeekAndTime;
+      case RepeatType.monthly:
+        return DateTimeComponents.dayOfMonthAndTime;
+      case RepeatType.none:
+        return null;
+    }
+  }
+
+  String _getRepeatDescription(RepeatType repeat) {
+    switch (repeat) {
+      case RepeatType.daily:
+        return "daily";
+      case RepeatType.weekly:
+        return "weekly";
+      case RepeatType.monthly:
+        return "monthly";
+      case RepeatType.none:
+        return "once";
+    }
+  }
+
   Future<void> init() async {
     try {
       _showFeedback("Initializing flutter_local_notifications...");
@@ -96,14 +122,15 @@ class NotificationService {
       }
 
       final reminderTime = activity.startTime.subtract(Duration(minutes: activity.reminderMinutesBefore));
-      if (reminderTime.isBefore(DateTime.now())) {
+      if (reminderTime.isBefore(DateTime.now()) && activity.repeat == RepeatType.none) {
         _showFeedback('Reminder time in past - skipping');
         return;
       }
 
       final tzReminderTime = tz.TZDateTime.from(reminderTime, tz.local);
       final timeStr = DateFormat('HH:mm').format(reminderTime);
-      _showFeedback('Scheduling reminder at $timeStr');
+      final repeatDesc = _getRepeatDescription(activity.repeat);
+      _showFeedback('Scheduling $repeatDesc reminder at $timeStr');
 
       const androidDetails = AndroidNotificationDetails(
         'activity_reminders',
@@ -111,9 +138,12 @@ class NotificationService {
         channelDescription: 'Reminders for scheduled activities',
         importance: Importance.high,
         priority: Priority.high,
+        enableVibration: true,
+        playSound: true,
       );
 
       final notifId = activity.id.hashCode.abs() % 100000;
+      final repeatComponent = _getRepeatComponent(activity.repeat);
 
       await _plugin.zonedSchedule(
         notifId,
@@ -123,9 +153,10 @@ class NotificationService {
         const NotificationDetails(android: androidDetails),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: repeatComponent,
       );
 
-      _showFeedback('Scheduled successfully (ID: $notifId)');
+      _showFeedback('Scheduled $repeatDesc reminder successfully (ID: $notifId)');
     } catch (e) {
       _showFeedback('Scheduling failed: $e');
     }
