@@ -42,7 +42,6 @@ class NotificationService {
         ?.requestNotificationsPermission();
     
     // Create notification channel explicitly
-    await _createNotificationChannel();
   }
 
   Future<void> _createNotificationChannel() async {
@@ -156,7 +155,6 @@ class NotificationService {
       final channelExists = channels?.any((c) => c.id == 'activity_reminders') ?? false;
       if (!channelExists) {
         _showFeedback('Channel missing - creating it now...');
-        await _createNotificationChannel();
       }
 
       final reminderTime = activity.startTime.subtract(
