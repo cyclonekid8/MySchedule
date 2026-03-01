@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 import '../models/activity.dart';
 
 class NotificationService {
@@ -7,6 +11,7 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
+  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
   Function(String)? _onUserFeedback;
 
   void setUserFeedbackCallback(Function(String) callback) {
@@ -21,76 +26,62 @@ class NotificationService {
 
   Future<void> init() async {
     try {
-      _showFeedback("Initializing awesome notifications...");
-      
-      // Initialize awesome notifications with channel
-      await AwesomeNotifications().initialize(
-        'resource://drawable/ic_launcher', // App icon
-        [
-          NotificationChannel(
-            channelKey: 'activity_reminders',
-            channelName: 'Activity Reminders',
-            channelDescription: 'Reminders for scheduled activities',
-            defaultColor: const Color(0xFF6C63FF),
-            ledColor: Colors.blue,
-            importance: NotificationImportance.High,
-            channelShowBadge: true,
-            playSound: true,
-            enableVibration: true,
+      _showFeedback("Initializing flutter_local_notifications...");
+
+      // Initialize timezone
+      tz.initializeTimeZones();
+      final timeZoneName = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+
+      // Initialize plugin
+      const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const settings = InitializationSettings(android: android);
+      await _plugin.initialize(settings, onDidReceiveNotificationResponse: (details) {});
+
+      // Request Android 13+ notification permission
+      _showFeedback("Requesting notification permission...");
+      final androidImpl = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImpl != null) {
+        final granted = await androidImpl.requestNotificationsPermission();
+        _showFeedback(granted == true ? "Permission granted" : "Permission denied");
+
+        // Create notification channel
+        _showFeedback("Creating notification channel...");
+        await androidImpl.createNotificationChannel(
+          const AndroidNotificationChannel(
+            'activity_reminders',
+            'Activity Reminders',
+            description: 'Reminders for scheduled activities',
+            importance: Importance.high,
           ),
-        ],
-      );
+        );
+        _showFeedback("Notification channel created successfully");
+        
+        // Check and request exact alarm permission
+        await _checkExactAlarmPermission();
+      }
 
-      _showFeedback("Notification channel created successfully");
-
-      // Request permissions
-      await _requestPermissions();
-      
     } catch (e) {
       _showFeedback("Initialization failed: $e");
     }
   }
 
-  Future<void> _requestPermissions() async {
-    try {
-      _showFeedback("Requesting notification permissions...");
+  Future<void> _checkExactAlarmPermission() async {
+    final androidImpl = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    if (androidImpl != null) {
+      final canSchedule = await androidImpl.canScheduleExactNotifications() ?? false;
       
-      // Request basic notification permission
-      bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
-      if (!isAllowed) {
-        isAllowed = await AwesomeNotifications().requestPermissionToSendNotifications();
-      }
-
-      if (isAllowed) {
-        _showFeedback("Notification permission granted");
-        
-        // Request exact alarm permission for precise timing
-        final List<NotificationPermission> permissions = [
-          NotificationPermission.Alert,
-          NotificationPermission.Sound,
-          NotificationPermission.Badge,
-          NotificationPermission.Vibration,
-          NotificationPermission.PreciseAlarms, // Important for Samsung devices
-        ];
-
-        await AwesomeNotifications().requestPermissionToSendNotifications(
-          permissions: permissions,
-        );
-        
-        _showFeedback("All permissions requested");
+      if (!canSchedule) {
+        _showFeedback("Requesting exact alarm permission...");
+        try {
+          await androidImpl.requestExactAlarmsPermission();
+          _showFeedback("Exact alarm permission requested");
+        } catch (e) {
+          _showFeedback("Failed to request exact alarm permission: $e");
+        }
       } else {
-        _showFeedback("Notification permission denied");
+        _showFeedback("Exact alarm permission already granted");
       }
-    } catch (e) {
-      _showFeedback("Permission request failed: $e");
-    }
-  }
-
-  Future<bool> canScheduleExactAlarms() async {
-    try {
-      return await AwesomeNotifications().isNotificationAllowed();
-    } catch (e) {
-      return false;
     }
   }
 
@@ -98,90 +89,75 @@ class NotificationService {
     if (!activity.hasReminder) return;
 
     try {
-      final reminderTime = activity.startTime.subtract(
-        Duration(minutes: activity.reminderMinutesBefore),
-      );
-      
+      // Check exact alarm permission before scheduling
+      final hasExactPermission = await ensureExactAlarmPermission();
+      if (!hasExactPermission) {
+        _showFeedback('Exact alarm permission denied - reminders may not be precise');
+      }
+
+      final reminderTime = activity.startTime.subtract(Duration(minutes: activity.reminderMinutesBefore));
       if (reminderTime.isBefore(DateTime.now())) {
-        _showFeedback('⚠️ Skipping ${activity.title} - reminder time in past');
+        _showFeedback('Reminder time in past - skipping');
         return;
       }
 
-      final notifId = activity.id.hashCode.abs() % 100000;
-      
-      _showFeedback('📅 Scheduling ${activity.title} reminder for ${reminderTime.hour}:${reminderTime.minute.toString().padLeft(2, '0')}');
+      final tzReminderTime = tz.TZDateTime.from(reminderTime, tz.local);
+      final timeStr = DateFormat('HH:mm').format(reminderTime);
+      _showFeedback('Scheduling reminder at $timeStr');
 
-      await AwesomeNotifications().createNotification(
-        content: NotificationContent(
-          id: notifId,
-          channelKey: 'activity_reminders',
-          title: '⏰ Activity Reminder',
-          body: '${activity.title} starts in ${activity.reminderMinutesBefore} minutes',
-          category: NotificationCategory.Reminder,
-          notificationLayout: NotificationLayout.Default,
-          wakeUpScreen: true,
-          criticalAlert: true, // Important for Samsung devices
-        ),
-        schedule: NotificationCalendar.fromDate(
-          date: reminderTime,
-          allowWhileIdle: true, // Critical for Samsung battery optimization
-          preciseAlarm: true,   // Ensures exact timing
-        ),
+      const androidDetails = AndroidNotificationDetails(
+        'activity_reminders',
+        'Activity Reminders',
+        channelDescription: 'Reminders for scheduled activities',
+        importance: Importance.high,
+        priority: Priority.high,
       );
-      
-      _showFeedback('✅ Notification scheduled (ID: $notifId)');
-      
+
+      final notifId = activity.id.hashCode.abs() % 100000;
+
+      await _plugin.zonedSchedule(
+        notifId,
+        'Activity Reminder',
+        '${activity.title} starts in ${activity.reminderMinutesBefore} minutes',
+        tzReminderTime,
+        const NotificationDetails(android: androidDetails),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      );
+
+      _showFeedback('Scheduled successfully (ID: $notifId)');
     } catch (e) {
-      _showFeedback('❌ Scheduling failed: $e');
+      _showFeedback('Scheduling failed: $e');
     }
   }
 
   Future<void> cancelActivityReminder(String activityId) async {
-    try {
-      final notifId = activityId.hashCode.abs() % 100000;
-      await AwesomeNotifications().cancel(notifId);
-    } catch (e) {
-      _showFeedback('Cancel reminder failed: $e');
-    }
+    final notifId = activityId.hashCode.abs() % 100000;
+    await _plugin.cancel(notifId);
   }
 
   Future<void> cancelAll() async {
-    try {
-      await AwesomeNotifications().cancelAll();
-    } catch (e) {
-      _showFeedback('Cancel all notifications failed: $e');
+    await _plugin.cancelAll();
+  }
+
+  Future<bool> ensureExactAlarmPermission() async {
+    final androidImpl = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    if (androidImpl != null) {
+      final canSchedule = await androidImpl.canScheduleExactNotifications() ?? false;
+      
+      if (!canSchedule) {
+        try {
+          await androidImpl.requestExactAlarmsPermission();
+          // Check again after request
+          return await androidImpl.canScheduleExactNotifications() ?? false;
+        } catch (e) {
+          _showFeedback("Failed to request exact alarm permission: $e");
+          return false;
+        }
+      }
+      
+      return canSchedule;
     }
-  }
-
-  Future<bool> ensureExactAlarmPermission(BuildContext context) async {
-    // awesome_notifications handles this automatically with PreciseAlarms permission
-    return await AwesomeNotifications().isNotificationAllowed();
-  }
-
-  // Set up notification action listeners (optional)
-  static Future<void> initializeActionListeners() async {
-    AwesomeNotifications().setListeners(
-      onActionReceivedMethod: onActionReceived,
-      onNotificationCreatedMethod: onNotificationCreated,
-      onNotificationDisplayedMethod: onNotificationDisplayed,
-      onDismissActionReceivedMethod: onDismissActionReceived,
-    );
-  }
-
-  static Future<void> onActionReceived(ReceivedAction receivedAction) async {
-    // Handle notification tap
-    print('Notification tapped: ${receivedAction.title}');
-  }
-
-  static Future<void> onNotificationCreated(ReceivedNotification receivedNotification) async {
-    print('Notification created: ${receivedNotification.title}');
-  }
-
-  static Future<void> onNotificationDisplayed(ReceivedNotification receivedNotification) async {
-    print('Notification displayed: ${receivedNotification.title}');
-  }
-
-  static Future<void> onDismissActionReceived(ReceivedAction receivedAction) async {
-    print('Notification dismissed: ${receivedAction.title}');
+    return false;
   }
 }

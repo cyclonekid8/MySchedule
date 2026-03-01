@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/schedule_provider.dart';
+import '../services/notification_service.dart';
+import '../services/notification_service.dart';
 import 'schedule_screen.dart';
 import 'calendar_screen.dart';
 import 'notes_screen.dart';
@@ -28,6 +30,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // Set up snackbar feedback for notification service after frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ScheduleProvider>().setContext(context);
+      // Re-initialize notifications now that feedback is set up
+      NotificationService().init();
     });
   }
 
