@@ -96,6 +96,22 @@ class NotificationService {
     await _plugin.cancelAll();
   }
 
+  // DEBUG: Test immediate notification
+  Future<void> testImmediate() async {
+    await _plugin.show(
+      999,
+      "TEST NOTIFICATION",
+      "If you see this, notifications work!",
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          "test_channel",
+          "Test Channel",
+          importance: Importance.high,
+        ),
+      ),
+    );
+  }
+
   Future<bool> ensureExactAlarmPermission(BuildContext context) async {
     return true;
   }
