@@ -41,12 +41,24 @@ class ScheduleProvider extends ChangeNotifier {
   DateTime _selectedDay = DateTime.now();
   final _uuid = const Uuid();
   final bool _skipNotifications;
+  BuildContext? _context;
 
   ScheduleProvider({bool skipNotifications = false})
       : _skipNotifications = skipNotifications;
 
   NotificationService? get _notifService =>
       _skipNotifications ? null : NotificationService();
+
+  void setContext(BuildContext context) {
+    _context = context;
+    // Set up snackbar callback for notification service
+    _notifService?.setUserFeedbackCallback((message) {
+      if (_context != null && _context!.mounted) {
+        ScaffoldMessenger.of(_context!).showSnackBar(
+          SnackBar(content: Text(message), duration: const Duration(seconds: 2)));
+      }
+    });
+  }
 
   List<Activity> get activities => _activities;
   List<Note> get notes => _notes;
@@ -101,9 +113,20 @@ class ScheduleProvider extends ChangeNotifier {
   Future<void> updateActivity(Activity activity) async {
     final idx = _activities.indexWhere((a) => a.id == activity.id);
     if (idx != -1) {
+      final oldActivity = _activities[idx];
       _activities[idx] = activity;
-      await _notifService?.cancelActivityReminder(activity.id);
-      await _notifService?.scheduleActivityReminder(activity);
+      
+      // If activity has reminders and time changed, update the scheduled notification
+      if (activity.hasReminder) {
+        // Cancel old reminder first
+        await _notifService?.cancelActivityReminder(activity.id);
+        // Schedule new reminder with updated time
+        await _notifService?.scheduleActivityReminder(activity);
+      } else if (oldActivity.hasReminder && !activity.hasReminder) {
+        // Reminder was disabled, cancel it
+        await _notifService?.cancelActivityReminder(activity.id);
+      }
+      
       await _save();
       notifyListeners();
     }
