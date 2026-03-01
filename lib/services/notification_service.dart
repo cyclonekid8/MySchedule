@@ -63,14 +63,8 @@ class NotificationService {
       );
       
       await android.createNotificationChannel(channel);
+      _showFeedback("✅ Notification channel created");
       
-      // Verify the channel was created by trying to get it
-      final channels = await android.getNotificationChannels();
-      final created = channels?.any((c) => c.id == 'activity_reminders') ?? false;
-      
-      if (created) {
-        _showFeedback('✅ Activity Reminders channel created and verified');
-      } else {
         _showFeedback('❌ Channel creation failed - not found in channel list');
       }
     } catch (e) {
