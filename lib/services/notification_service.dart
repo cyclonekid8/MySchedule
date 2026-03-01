@@ -93,7 +93,7 @@ class NotificationService {
     if (android != null) {
       await android.requestExactAlarmsPermission();
     }
-  ;
+  }
 
   /// Show a dialog prompting user to enable exact alarms, returns true if granted
   Future<bool> ensureExactAlarmPermission(BuildContext context) async {
