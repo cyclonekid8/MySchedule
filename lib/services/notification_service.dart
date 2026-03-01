@@ -32,6 +32,16 @@ class NotificationService {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android);
     await _plugin.initialize(settings, onDidReceiveNotificationResponse: (details) {});
+    
+    // Create notification channel
+    await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'activity_reminders',
+        'Activity Reminders',
+        description: 'Reminders for scheduled activities',
+        importance: Importance.high,
+      ),
+    );
     await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
   }
 
