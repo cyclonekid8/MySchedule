@@ -7,7 +7,6 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  awesome_notifications: ^0.9.3
   flutter:
     sdk: flutter
   provider: ^6.1.1
@@ -18,7 +17,6 @@ dependencies:
 
 
 dev_dependencies:
-  awesome_notifications: ^0.9.3
   flutter_test:
     sdk: flutter
   integration_test:
@@ -27,3 +25,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  flutter_local_notifications: ^17.2.4
+  flutter_timezone: ^1.0.8
+  timezone: ^0.9.4
