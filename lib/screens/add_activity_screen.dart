@@ -531,7 +531,7 @@ class _AddActivityScreenState extends State<AddActivityScreen> {
             onChanged: (v) async {
               if (v) {
                 // Check exact alarm permission when enabling reminders
-                final granted = await NotificationService().ensureExactAlarmPermission(context);
+                final granted = await NotificationService().ensureExactAlarmPermission();
                 if (!granted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Reminders may not be precise without alarm permission')));
