@@ -34,6 +34,19 @@ class NotificationService {
     await _plugin.initialize(settings, onDidReceiveNotificationResponse: (details) {});
 
     // Create notification channel
+    _showFeedback("Attempting to create notification channel...");
+    await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'activity_reminders',
+        'Activity Reminders',
+        description: 'Reminders for scheduled activities',
+        importance: Importance.high,
+      ),
+    );
+    _showFeedback("Notification channel creation completed");
+    await _plugin.initialize(settings, onDidReceiveNotificationResponse: (details) {});
+
+    // Create notification channel
     await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(
     _showFeedback("Notification channel creation completed");
     _showFeedback("Attempting to create notification channel...");
