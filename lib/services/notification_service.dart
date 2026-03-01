@@ -27,9 +27,9 @@ class NotificationService {
     try {
       final timeZoneName = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(timeZoneName));
-      _showFeedback('Timezone set to: \${tz.local.name}');
+      _showFeedback('Timezone set to: ${tz.local.name}');
     } catch (e) {
-      _showFeedback('Could not set local timezone: \$e');
+      _showFeedback('Could not set local timezone: $e');
     }
     
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -39,7 +39,7 @@ class NotificationService {
     try {
       await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
     } catch (e) {
-      _showFeedback('Permission request failed: \$e');
+      _showFeedback('Permission request failed: $e');
     }
   }
 
@@ -62,7 +62,7 @@ class NotificationService {
 
     final tzReminderTime = tz.TZDateTime.from(reminderTime, tz.local);
     final timeStr = DateFormat('HH:mm').format(reminderTime);
-    _showFeedback('📅 Scheduling \${activity.title} reminder at \$timeStr');
+    _showFeedback('Scheduling ${activity.title} reminder at $timeStr');
 
     const androidDetails = AndroidNotificationDetails(
       'activity_reminders',
@@ -77,15 +77,15 @@ class NotificationService {
 
     await _plugin.zonedSchedule(
       notifId,
-      '⏰ \${activity.title}',
-      'Starting in \${activity.reminderMinutesBefore} minutes · \${activity.category.label}',
+      'Activity: ${activity.title}',
+      'Starting in ${activity.reminderMinutesBefore} minutes',
       tzReminderTime,
       const NotificationDetails(android: androidDetails),
       androidScheduleMode: canExact ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
     
-    _showFeedback('✅ Scheduled (ID: \$notifId, \${canExact ? 'exact' : 'inexact'})');
+    _showFeedback('Scheduled notification ID $notifId');
   }
 
   Future<void> cancelActivityReminder(String activityId) async {
