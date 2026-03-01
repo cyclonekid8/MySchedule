@@ -19,39 +19,27 @@ class NotificationService {
   }
 
   void _showFeedback(String message) {
-    _onUserFeedback?.call(message);
+    if (_onUserFeedback != null) {
+      _onUserFeedback!(message);
+    }
   }
 
   Future<void> init() async {
     tz.initializeTimeZones();
-    try {
-      final timeZoneName = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timeZoneName));
-      _showFeedback('Timezone set to: ${tz.local.name}');
-    } catch (e) {
-      _showFeedback('Could not set local timezone: $e');
-    }
+    final timeZoneName = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timeZoneName));
     
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android);
     await _plugin.initialize(settings, onDidReceiveNotificationResponse: (details) {});
-    
-    try {
-      await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
-    } catch (e) {
-      _showFeedback('Permission request failed: $e');
-    }
+    await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
   }
 
   Future<bool> canScheduleExactAlarms() async {
-    try {
-      final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-      if (android == null) return true;
-      final canSchedule = await android.canScheduleExactNotifications();
-      return canSchedule ?? true;
-    } catch (e) {
-      return true;
-    }
+    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    if (android == null) return true;
+    final canSchedule = await android.canScheduleExactNotifications();
+    return canSchedule ?? true;
   }
 
   Future<void> scheduleActivityReminder(Activity activity) async {
@@ -62,7 +50,7 @@ class NotificationService {
 
     final tzReminderTime = tz.TZDateTime.from(reminderTime, tz.local);
     final timeStr = DateFormat('HH:mm').format(reminderTime);
-    _showFeedback('Scheduling ${activity.title} reminder at $timeStr');
+    _showFeedback('Scheduling reminder at ' + timeStr);
 
     const androidDetails = AndroidNotificationDetails(
       'activity_reminders',
@@ -77,15 +65,15 @@ class NotificationService {
 
     await _plugin.zonedSchedule(
       notifId,
-      'Activity: ${activity.title}',
-      'Starting in ${activity.reminderMinutesBefore} minutes',
+      'Activity Reminder',
+      activity.title + ' starts in ' + activity.reminderMinutesBefore.toString() + ' minutes',
       tzReminderTime,
       const NotificationDetails(android: androidDetails),
       androidScheduleMode: canExact ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
     
-    _showFeedback('Scheduled notification ID $notifId');
+    _showFeedback('Notification scheduled');
   }
 
   Future<void> cancelActivityReminder(String activityId) async {
@@ -98,6 +86,6 @@ class NotificationService {
   }
 
   Future<bool> ensureExactAlarmPermission(BuildContext context) async {
-    return await canScheduleExactAlarms();
+    return true;
   }
 }
