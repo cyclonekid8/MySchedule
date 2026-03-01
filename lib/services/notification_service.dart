@@ -46,16 +46,37 @@ class NotificationService {
   }
 
   Future<void> _createNotificationChannel() async {
-    const channel = AndroidNotificationChannel(
-      'activity_reminders',
-      'Activity Reminders',
-      description: 'Reminders for scheduled activities',
-      importance: Importance.high,
-    );
-    
-    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    await android?.createNotificationChannel(channel);
-    _showFeedback('Notification channel created');
+    try {
+      final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      if (android == null) {
+        _showFeedback('Android notifications not available');
+        return;
+      }
+
+      const channel = AndroidNotificationChannel(
+        'activity_reminders',
+        'Activity Reminders',
+        description: 'Reminders for scheduled activities',
+        importance: Importance.high,
+        enableVibration: true,
+        playSound: true,
+        showBadge: true,
+      );
+      
+      await android.createNotificationChannel(channel);
+      
+      // Verify the channel was created by trying to get it
+      final channels = await android.getNotificationChannels();
+      final created = channels?.any((c) => c.id == 'activity_reminders') ?? false;
+      
+      if (created) {
+        _showFeedback('✅ Activity Reminders channel created and verified');
+      } else {
+        _showFeedback('❌ Channel creation failed - not found in channel list');
+      }
+    } catch (e) {
+      _showFeedback('Channel creation error: $e');
+    }
   }
 
   /// Check if exact alarms are permitted (Android 12+)
@@ -72,7 +93,7 @@ class NotificationService {
     if (android != null) {
       await android.requestExactAlarmsPermission();
     }
-  }
+  ;
 
   /// Show a dialog prompting user to enable exact alarms, returns true if granted
   Future<bool> ensureExactAlarmPermission(BuildContext context) async {
@@ -123,44 +144,66 @@ class NotificationService {
   Future<void> scheduleActivityReminder(Activity activity) async {
     if (!activity.hasReminder) return;
 
-    final reminderTime = activity.startTime.subtract(
-      Duration(minutes: activity.reminderMinutesBefore),
-    );
-    if (reminderTime.isBefore(DateTime.now())) {
-      _showFeedback('Skipping reminder for ${activity.title} - time is in the past');
-      return;
+    try {
+      final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      if (android == null) {
+        _showFeedback('Cannot schedule - Android notifications not available');
+        return;
+      }
+
+      // Verify channel exists before scheduling
+      final channels = await android.getNotificationChannels();
+      final channelExists = channels?.any((c) => c.id == 'activity_reminders') ?? false;
+      if (!channelExists) {
+        _showFeedback('Channel missing - creating it now...');
+        await _createNotificationChannel();
+      }
+
+      final reminderTime = activity.startTime.subtract(
+        Duration(minutes: activity.reminderMinutesBefore),
+      );
+      
+      if (reminderTime.isBefore(DateTime.now())) {
+        _showFeedback('⚠️ Skipping ${activity.title} - reminder time in past');
+        return;
+      }
+
+      final tzReminderTime = tz.TZDateTime.from(reminderTime, tz.local);
+      final timeStr = DateFormat('HH:mm').format(reminderTime);
+      _showFeedback('📅 Scheduling ${activity.title} reminder at $timeStr');
+
+      const androidDetails = AndroidNotificationDetails(
+        'activity_reminders',
+        'Activity Reminders',
+        channelDescription: 'Reminders for scheduled activities',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+        enableVibration: true,
+        playSound: true,
+      );
+      const details = NotificationDetails(android: androidDetails);
+
+      final notifId = activity.id.hashCode.abs() % 100000;
+      final canExact = await canScheduleExactAlarms();
+
+      await _plugin.zonedSchedule(
+        notifId,
+        '⏰ ${activity.title}',
+        'Starting in ${activity.reminderMinutesBefore} minutes · ${activity.displayCategory}',
+        tzReminderTime,
+        details,
+        androidScheduleMode: canExact
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      
+      _showFeedback('✅ Scheduled (ID: $notifId, ${canExact ? 'exact' : 'inexact'})');
+    } catch (e) {
+      _showFeedback('❌ Scheduling failed: $e');
     }
-
-    final tzReminderTime = tz.TZDateTime.from(reminderTime, tz.local);
-    _showFeedback('Scheduling reminder for ${activity.title} at ${DateFormat('HH:mm').format(reminderTime)}');
-
-    const androidDetails = AndroidNotificationDetails(
-      'activity_reminders',
-      'Activity Reminders',
-      channelDescription: 'Reminders for scheduled activities',
-      importance: Importance.high,
-      priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
-    );
-    const details = NotificationDetails(android: androidDetails);
-
-    final notifId = activity.id.hashCode.abs() % 100000;
-
-    // Try exact first, fall back to inexact if not permitted
-    final canExact = await canScheduleExactAlarms();
-    await _plugin.zonedSchedule(
-      notifId,
-      '⏰ ${activity.title}',
-      'Starting in ${activity.reminderMinutesBefore} minutes · ${activity.category.label}',
-      tzReminderTime,
-      details,
-      androidScheduleMode: canExact
-        ? AndroidScheduleMode.exactAllowWhileIdle
-        : AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
-    _showFeedback('Notification scheduled (${canExact ? 'exact' : 'inexact'})');
   }
 
   Future<void> cancelActivityReminder(String activityId) async {
