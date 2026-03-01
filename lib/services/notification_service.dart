@@ -28,11 +28,11 @@ class NotificationService {
     tz.initializeTimeZones();
     final timeZoneName = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(timeZoneName));
-    
+
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android);
     await _plugin.initialize(settings, onDidReceiveNotificationResponse: (details) {});
-    
+
     // Create notification channel
     await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -42,6 +42,7 @@ class NotificationService {
         importance: Importance.high,
       ),
     );
+    
     await _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
   }
 
@@ -54,7 +55,7 @@ class NotificationService {
 
   Future<void> scheduleActivityReminder(Activity activity) async {
     if (!activity.hasReminder) return;
-    
+
     final reminderTime = activity.startTime.subtract(Duration(minutes: activity.reminderMinutesBefore));
     if (reminderTime.isBefore(DateTime.now())) return;
 
@@ -82,7 +83,7 @@ class NotificationService {
       androidScheduleMode: canExact ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
-    
+
     _showFeedback('Notification scheduled');
   }
 
