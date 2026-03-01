@@ -26,7 +26,12 @@ android {
         versionName flutterVersionName
     }
     buildTypes {
-        release { signingConfig signingConfigs.debug }
+        release {
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+        }
+        
     }
 }
 flutter { source '../..' }
