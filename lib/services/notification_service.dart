@@ -190,7 +190,7 @@ class NotificationService {
       await _plugin.zonedSchedule(
         notifId,
         '⏰ ${activity.title}',
-        'Starting in ${activity.reminderMinutesBefore} minutes · ${activity.displayCategory}',
+        'Starting in ${activity.reminderMinutesBefore} minutes · ${activity.category.label}',
         tzReminderTime,
         details,
         androidScheduleMode: canExact
