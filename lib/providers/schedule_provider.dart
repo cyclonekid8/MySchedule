@@ -52,12 +52,6 @@ class ScheduleProvider extends ChangeNotifier {
   void setContext(BuildContext context) {
     _context = context;
     // Set up snackbar callback for notification service
-    _notifService?.setUserFeedbackCallback((message) {
-      if (_context != null && _context!.mounted) {
-        ScaffoldMessenger.of(_context!).showSnackBar(
-          SnackBar(content: Text(message), duration: const Duration(seconds: 2)));
-      }
-    });
   }
 
   List<Activity> get activities => _activities;
