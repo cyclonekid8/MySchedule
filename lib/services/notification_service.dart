@@ -86,45 +86,87 @@ class NotificationService {
   }
 
   Future<void> scheduleActivityReminder(Activity activity) async {
-    if (!activity.hasReminder) return;
-
     try {
       final hasExactPermission = await ensureExactAlarmPermission();
 
-      final reminderTime = activity.startTime.subtract(Duration(minutes: activity.reminderMinutesBefore));
-      if (reminderTime.isBefore(DateTime.now()) && activity.repeat == RepeatType.none) {
-        return;
+      // Schedule start notification (always)
+      await _scheduleStartNotification(activity);
+
+      // Schedule reminder notification (if enabled)
+      if (activity.hasReminder) {
+        await _scheduleReminderNotification(activity);
       }
-
-      final tzReminderTime = tz.TZDateTime.from(reminderTime, tz.local);
-
-      const androidDetails = AndroidNotificationDetails(
-        'activity_reminders',
-        'Activity Reminders',
-        channelDescription: 'Reminders for scheduled activities',
-        importance: Importance.high,
-        priority: Priority.high,
-        enableVibration: true,
-        playSound: true,
-      );
-
-      final notifId = activity.id.hashCode.abs() % 100000;
-      final repeatComponent = _getRepeatComponent(activity.repeat);
-
-      await _plugin.zonedSchedule(
-        notifId,
-        'Activity Reminder',
-        '${activity.title} starts in ${activity.reminderMinutesBefore} minutes',
-        tzReminderTime,
-        const NotificationDetails(android: androidDetails),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: repeatComponent,
-      );
 
     } catch (e) {
       // Silent error handling
     }
+  }
+
+  Future<void> _scheduleStartNotification(Activity activity) async {
+    final startTime = activity.startTime;
+    if (startTime.isBefore(DateTime.now()) && activity.repeat == RepeatType.none) {
+      return;
+    }
+
+    final tzStartTime = tz.TZDateTime.from(startTime, tz.local);
+
+    const androidDetails = AndroidNotificationDetails(
+      'activity_reminders',
+      'Activity Reminders',
+      channelDescription: 'Activity start notifications',
+      importance: Importance.high,
+      priority: Priority.high,
+      enableVibration: true,
+      playSound: true,
+    );
+
+    final startNotifId = (activity.id.hashCode.abs() % 100000) + 50000; // Offset for start notifications
+    final repeatComponent = _getRepeatComponent(activity.repeat);
+
+    await _plugin.zonedSchedule(
+      startNotifId,
+      '🚀 Activity Starting',
+      '${activity.title} is starting now!',
+      tzStartTime,
+      const NotificationDetails(android: androidDetails),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: repeatComponent,
+    );
+  }
+
+  Future<void> _scheduleReminderNotification(Activity activity) async {
+    final reminderTime = activity.startTime.subtract(Duration(minutes: activity.reminderMinutesBefore));
+    if (reminderTime.isBefore(DateTime.now()) && activity.repeat == RepeatType.none) {
+      return;
+    }
+
+    final tzReminderTime = tz.TZDateTime.from(reminderTime, tz.local);
+
+    const androidDetails = AndroidNotificationDetails(
+      'activity_reminders',
+      'Activity Reminders',
+      channelDescription: 'Reminders for scheduled activities',
+      importance: Importance.high,
+      priority: Priority.high,
+      enableVibration: true,
+      playSound: true,
+    );
+
+    final reminderNotifId = activity.id.hashCode.abs() % 100000; // Original reminder ID
+    final repeatComponent = _getRepeatComponent(activity.repeat);
+
+    await _plugin.zonedSchedule(
+      reminderNotifId,
+      '⏰ Activity Reminder',
+      '${activity.title} starts in ${activity.reminderMinutesBefore} minutes',
+      tzReminderTime,
+      const NotificationDetails(android: androidDetails),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: repeatComponent,
+    );
+  }
   }
 
   Future<void> cancelActivityReminder(String activityId) async {
